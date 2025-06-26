@@ -1,7 +1,7 @@
 # Backend
 
 
-Installieren `python -m venv venv`, `venv/Script/Active` `(Windows)` oder `venv/bin/active` (Linux), `pip install -r requirements.txt`
+Installieren `python -m venv venv`, `venv/Script/Active` `(Windows)` oder `source venv/bin/active` (Linux), `pip install -r requirements.txt`
 
 
 

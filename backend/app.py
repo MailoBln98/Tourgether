@@ -1,33 +1,34 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
-
-# Import our repository classes from the new database.py file
 from DataBase import UserRepository, GpxRepository
 
+from typing import Any, Dict, List, Optional
+from pymongo.results import InsertOneResult, UpdateResult
+
 # --- App Initialization ---
-app = Flask(__name__)
+app: Flask = Flask(__name__)
 
 # --- Configuration ---
 app.config["SECRET_KEY"] = "dev-secret-key" # For JWT
 app.config["MONGO_URI"] = "mongodb://localhost:27017/tourgether"
 
 # --- Extensions Initialization ---
-mongo = PyMongo(app)
-bcrypt = Bcrypt(app)
-jwt = JWTManager(app)
+mongo: PyMongo = PyMongo(app)
+bcrypt: Bcrypt = Bcrypt(app)
+jwt: JWTManager = JWTManager(app)
 
 # --- Repository Instances ---
 # We instantiate our repositories, passing them the necessary dependencies (db connection, bcrypt)
-user_repo = UserRepository(db=mongo.db, bcrypt=bcrypt)
-gpx_repo = GpxRepository(db=mongo.db)
+user_repo: UserRepository = UserRepository(db=mongo.db, bcrypt=bcrypt)
+gpx_repo: GpxRepository = GpxRepository(db=mongo.db)
 
 
 # --- Authentication Routes ---
 
 @app.route('/api/auth/register', methods=['POST'])
-def register():
+def register() -> Response:
     data = request.get_json()
     if not data or not 'email' in data or not 'password' in data or not 'name' in data:
         return jsonify({'message': 'Missing name, email, or password'}), 400
@@ -40,15 +41,15 @@ def register():
 
 
 @app.route('/api/auth/login', methods=['POST'])
-def login():
-    data = request.get_json()
+def login() -> Response:
+    data: Any = request.get_json()
     if not data or not 'email' in data or not 'password' in data:
         return jsonify({'message': 'Missing email or password'}), 400
 
-    user = user_repo.find_by_email(data['email'])
+    user: Dict[str, Any] = user_repo.find_by_email(data['email'])
 
     if user and bcrypt.check_password_hash(user['password'], data['password']):
-        access_token = create_access_token(identity=user['_id'])
+        access_token: str = create_access_token(identity=user['_id'])
         return jsonify({'access_token': access_token})
 
     return jsonify({'message': 'Invalid credentials'}), 401
@@ -58,19 +59,19 @@ def login():
 
 @app.route('/api/upload_gpx', methods=['POST'])
 @jwt_required()
-def upload_gpx():
-    current_user_uuid = get_jwt_identity()
-    gpx_data = request.get_data(as_text=True)
+def upload_gpx() -> Response:
+    current_user_uuid: Any = get_jwt_identity()
+    gpx_data: str = request.get_data(as_text=True)
     if not gpx_data:
         return jsonify({'message': 'No GPX data provided'}), 400
 
-    result = gpx_repo.save_gpx(gpx_data, current_user_uuid)
+    result: InsertOneResult = gpx_repo.save_gpx(gpx_data, current_user_uuid)
     return jsonify({'message': 'GPX route uploaded', 'inserted_id': str(result.inserted_id)}), 201
 
 
 @app.route('/api/routes', methods=['GET'])
-def get_routes():
-    routes = gpx_repo.get_all_gpx()
+def get_routes() -> Response:
+    routes: List[Dict[str, Any]] = gpx_repo.get_all_gpx()
     for route in routes:
         route['_id'] = str(route['_id'])
     return jsonify(routes)
@@ -78,14 +79,14 @@ def get_routes():
 
 @app.route('/api/routes/<route_id>/ride', methods=['POST'])
 @jwt_required()
-def register_for_route(route_id):
-    current_user_uuid = get_jwt_identity()
+def register_for_route(route_id: str) -> Response:
+    current_user_uuid: Any = get_jwt_identity()
 
     # Check if route exists first for a better error message
     if not gpx_repo.find_by_id(route_id):
         return jsonify({'message': 'Route not found'}), 404
     
-    result = gpx_repo.add_user_to_route(route_id, current_user_uuid)
+    result: UpdateResult = gpx_repo.add_user_to_route(route_id, current_user_uuid)
     
     if result.modified_count == 0:
         return jsonify({'message': 'User already registered for this route'}), 200

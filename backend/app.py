@@ -29,6 +29,11 @@ gpx_repo: GpxRepository = GpxRepository(db=mongo.db)
 
 @app.route('/api/auth/register', methods=['POST'])
 def register() -> Response:
+    """Register a new user.
+
+    Expects JSON with 'name', 'email', and 'password'.
+    Returns 201 on success, 400 if data is missing, or 409 if email is already registered.
+    """
     data = request.get_json()
     if not data or not 'email' in data or not 'password' in data or not 'name' in data:
         return jsonify({'message': 'Missing name, email, or password'}), 400
@@ -42,6 +47,11 @@ def register() -> Response:
 
 @app.route('/api/auth/login', methods=['POST'])
 def login() -> Response:
+    """Login a user.
+
+    Expects JSON with 'email' and 'password'.
+    Returns 200 with access token on success, 400 if data is missing, or 401 if credentials are invalid.
+    """
     data: Any = request.get_json()
     if not data or not 'email' in data or not 'password' in data:
         return jsonify({'message': 'Missing email or password'}), 400
@@ -60,6 +70,11 @@ def login() -> Response:
 @app.route('/api/upload_gpx', methods=['POST'])
 @jwt_required()
 def upload_gpx() -> Response:
+    """Upload a GPX route.
+
+    Expects raw GPX data in the request body.
+    Returns 201 on success, 400 if no data is provided.
+    """
     current_user_uuid: Any = get_jwt_identity()
     gpx_data: str = request.get_data(as_text=True)
     if not gpx_data:
@@ -71,27 +86,43 @@ def upload_gpx() -> Response:
 
 @app.route('/api/routes', methods=['GET'])
 def get_routes() -> Response:
+    """Get all GPX routes.
+
+    Returns a list of all routes, creator and participants in JSON format.
+    """
     routes: List[Dict[str, Any]] = gpx_repo.get_all_gpx()
     for route in routes:
         route['_id'] = str(route['_id'])
     return jsonify(routes)
 
 
-@app.route('/api/routes/<route_id>/ride', methods=['POST'])
+@app.route('/api/routes/<route_id>/ride', methods=['POST', 'DELETE'])
 @jwt_required()
-def register_for_route(route_id: str) -> Response:
-    current_user_uuid: Any = get_jwt_identity()
+def route_riders(route_id: str) -> Response:
+    """Register or unregister a user for a specific route.
 
-    # Check if route exists first for a better error message
-    if not gpx_repo.find_by_id(route_id):
-        return jsonify({'message': 'Route not found'}), 404
-    
-    result: UpdateResult = gpx_repo.add_user_to_route(route_id, current_user_uuid)
-    
-    if result.modified_count == 0:
-        return jsonify({'message': 'User already registered for this route'}), 200
+    Expects route_id in the URL.
+    - POST to register the user for the route.
+    - DELETE to unregister the user (not yet implemented).
+    Returns 200 on success, 404 if route not found.
+    """
 
-    return jsonify({'message': 'Successfully registered for the route'}), 200
+    if request.method == 'POST':
+        current_user_uuid: Any = get_jwt_identity()
+
+        # Check if route exists first for a better error message
+        if not gpx_repo.find_by_id(route_id):
+            return jsonify({'message': 'Route not found'}), 404
+        
+        result: UpdateResult = gpx_repo.add_user_to_route(route_id, current_user_uuid)
+        
+        if result.modified_count == 0:
+            return jsonify({'message': 'User already registered for this route'}), 200
+
+        return jsonify({'message': 'Successfully registered for the route'}), 200
+    
+    elif request.method == 'DELETE':
+        pass  # Placeholder for future implementation of removing a user from a route
 
 
 if __name__ == '__main__':

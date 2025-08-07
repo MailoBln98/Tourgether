@@ -77,3 +77,10 @@ class GpxRepository:
             {'_id': ObjectId(route_id)},
             {'$addToSet': {'registered_users': user_uuid}}
         )
+    
+    def remove_user_from_route(self, route_id: str, user_uuid: str) -> UpdateResult:
+        """Removes a user's UUID from a route's 'registered_users' list."""
+        return self.routes.update_one(
+            {'_id': ObjectId(route_id)},
+            {'$pull': {'registered_users': user_uuid}}
+        )

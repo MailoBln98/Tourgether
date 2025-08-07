@@ -122,7 +122,17 @@ def route_riders(route_id: str) -> Response:
         return jsonify({'message': 'Successfully registered for the route'}), 200
     
     elif request.method == 'DELETE':
-        pass  # Placeholder for future implementation of removing a user from a route
+        current_user_uuid = get_jwt_identity
+
+        if not gpx_repo.find_by_id(route_id):
+            return jsonify({'message': 'Route not found'}), 404
+        
+        result = gpx_repo.remove_user_from_route(route_id, current_user_uuid)
+
+        if result.modified_count == 0:
+            return jsonify({'message': 'User is not registered to this route'}), 200
+        
+        return jsonify({'message': 'Successfully unregistered from the route'}), 200
 
 
 if __name__ == '__main__':

@@ -8,6 +8,10 @@ const Header: React.FC = () => {
     navigate("/");
   };
 
+  const handleUploadClick = () => {
+    navigate("/upload");
+  };
+
   return (
     <header style={{ padding: "1rem", backgroundColor: "#333", color: "white" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -24,6 +28,12 @@ const Header: React.FC = () => {
             onClick={handleHomeClick}
           >
             Home
+          </button>
+          <button 
+            style={{ marginLeft: "1rem", padding: "0.5rem 1rem", cursor: "pointer" }}
+            onClick={handleUploadClick}
+          >
+            Upload Route
           </button>
         </nav>
       </div>

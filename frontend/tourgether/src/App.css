@@ -1,8 +1,15 @@
 #root {
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
+
+main {
+  padding: 2rem;
+  max-width: 1280px;
 }
 
 .logo {
@@ -40,3 +47,62 @@
 .read-the-docs {
   color: #888;
 }
+
+header, footer {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.btn-black {
+  background-color: black;
+  color: white;
+  border: 1px solid black;
+  border-radius: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  display: inline-block;
+  text-align: left;
+  margin-left: 0px;
+  margin-top: 20px;
+  margin-right: auto;
+}
+
+.btn-black:hover {
+  background-color: #333;
+  color: #eee;
+  border-color: #333;
+}
+
+.btn-secondary {
+  background-color: grey;
+  color: white;
+  border: 1px solid grey;
+  border-radius: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  display: inline-block;
+  text-align: left;
+  margin-left: 20px;
+  margin-top: 20px;
+  margin-right: auto;
+}
+
+.btn-secondary:hover {
+  background-color: #333;
+  color: #eee;
+  border-color: #333;
+}
+
+
+.location-text {
+  font-size: 1.2rem;   
+  text-align: left;   
+}
+
+

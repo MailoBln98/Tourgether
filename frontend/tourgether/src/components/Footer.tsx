@@ -7,7 +7,6 @@ const Footer: React.FC = () => {
       backgroundColor: "#333", 
       color: "white", 
       textAlign: "center",
-      marginTop: "2rem"
     }}>
       <p>&copy; 2025 Tourgether - Motorcycle Touring Social Network</p>
     </footer>

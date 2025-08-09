@@ -40,6 +40,15 @@ main {
   }
 }
 
+header, footer {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+footer {
+  margin-top: auto;
+}
+
 .card {
   padding: 2em;
 }

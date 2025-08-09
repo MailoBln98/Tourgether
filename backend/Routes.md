@@ -19,7 +19,10 @@ Die user id (`_id`) ist im JWT-Token enthalten, um den aktuell eingeloggten Benu
 ### GPX-Routen
 - **POST /api/upload_gpx**
   - Lädt eine GPX-Route hoch.
-  - Erwartet rohe GPX-Daten im Anfragekörper.
+  - Erwartet ein Multipart/Form-Data-Request mit den folgenden Feldern:
+    - 'gpx_file': Die GPX-Datei selbst.
+    - 'start_time': Das Startdatum und die Startzeit im ISO 8601-Format (z.B. "2023-10-27T10:00:00Z").
+    - 'start_point': Eine Zeichenfolge, die den Startpunkt als Koordinaten beschreibt (z.B. "52.45693768689539, 13.526196936079945").
   - Gibt 200 und routen ID bei Erfolg, 400 bei fehlenden Daten zurück.
 
 - **GET /api/routes**
@@ -31,6 +34,8 @@ Die user id (`_id`) ist im JWT-Token enthalten, um den aktuell eingeloggten Benu
         "_id": "route_id",
         "gpx": "raw_gpx_data",
         "owner_uuid": "creator_id",
+        "start_time": "ISO 8601 format",
+        "start_point": "GPS coordinates",
         "registered_users": ["user_id1", "user_id2"],
       }
     ]

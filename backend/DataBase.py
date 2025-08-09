@@ -1,6 +1,7 @@
 # database.py
 
 import uuid
+from datetime import datetime
 from bson.objectid import ObjectId
 from bson.objectid import ObjectId
 from flask_bcrypt import Bcrypt
@@ -52,11 +53,13 @@ class GpxRepository:
         """
         self.routes: Collection = db.routes
 
-    def save_gpx(self, gpx_data, owner_uuid) -> InsertOneResult:
-        """Saves GPX data, associating it with an owner."""
+    def save_gpx(self, gpx_data: str, owner_uuid: str, start_time: datetime, start_point: str) -> InsertOneResult:
+        """Saves GPX data with start time and point, associating it with an owner."""
         return self.routes.insert_one({
             'gpx': gpx_data,
             'owner_uuid': owner_uuid,
+            'start_time': start_time,
+            'start_point': start_point,
             'registered_users': []
         })
 

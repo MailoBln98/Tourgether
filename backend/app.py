@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, Response
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
+from datetime import datetime
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 from DataBase import UserRepository, GpxRepository
 
@@ -70,17 +71,42 @@ def login() -> Response:
 @app.route('/api/upload_gpx', methods=['POST'])
 @jwt_required()
 def upload_gpx() -> Response:
-    """Upload a GPX route.
+    """Upload a GPX route with a start time and start point.
 
-    Expects raw GPX data in the request body.
-    Returns 201 on success, 400 if no data is provided.
+    Expects a multipart/form-data request with the following fields:
+    - 'gpx_file': The GPX file itself.
+    - 'start_time': The start date and time in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+    - 'start_point': A string describing the starting location as coordinates (e.g., "52.45693768689539, 13.526196936079945").
+
+    Returns 201 on success, 400 if data is missing or invalid.
     """
     current_user_uuid: Any = get_jwt_identity()
-    gpx_data: str = request.get_data(as_text=True)
-    if not gpx_data:
-        return jsonify({'message': 'No GPX data provided'}), 400
 
-    result: InsertOneResult = gpx_repo.save_gpx(gpx_data, current_user_uuid)
+    gpx_file = request.files.get('gpx_file')
+    start_time_str = request.form.get('start_time')
+    start_point = request.form.get('start_point')
+
+    if not gpx_file:
+        return jsonify({'message': "Missing 'gpx_file' in the request"}), 400
+    if not start_time_str:
+        return jsonify({'message': "Missing 'start_time' field in the request"}), 400
+    if not start_point:
+        return jsonify({'message': "Missing 'start_point' field in the request"}), 400
+
+    gpx_data: str = gpx_file.read().decode('utf-8')
+    
+    try:
+        start_time_dt = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+    except ValueError:
+        return jsonify({'message': 'Invalid start_time format. Use ISO 8601 format (e.g., 2023-10-27T10:00:00Z).'}), 400
+
+    result: InsertOneResult = gpx_repo.save_gpx(
+        gpx_data=gpx_data,
+        owner_uuid=current_user_uuid,
+        start_time=start_time_dt,
+        start_point=start_point
+    )
+    
     return jsonify({'message': 'GPX route uploaded', 'inserted_id': str(result.inserted_id)}), 201
 
 

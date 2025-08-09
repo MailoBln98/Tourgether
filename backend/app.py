@@ -104,11 +104,12 @@ def route_riders(route_id: str) -> Response:
     Expects route_id in the URL.
     - POST to register the user for the route.
     - DELETE to unregister the user (not yet implemented).
-    Returns 200 on success, 404 if route not found.
+    Returns 200 on success, 204 if the user was not registered, 404 if route not found.
     """
+    current_user_uuid: Any = get_jwt_identity()
+
 
     if request.method == 'POST':
-        current_user_uuid: Any = get_jwt_identity()
 
         # Check if route exists first for a better error message
         if not gpx_repo.find_by_id(route_id):
@@ -122,7 +123,17 @@ def route_riders(route_id: str) -> Response:
         return jsonify({'message': 'Successfully registered for the route'}), 200
     
     elif request.method == 'DELETE':
-        pass  # Placeholder for future implementation of removing a user from a route
+        
+
+        if not gpx_repo.find_by_id(route_id):
+            return jsonify({'message': 'Route not found'}), 404
+        
+        result = gpx_repo.remove_user_from_route(route_id, current_user_uuid)
+
+        if result.modified_count == 0:
+            return jsonify({'message': 'User is not registered to this route'}), 204
+        
+        return jsonify({'message': 'Successfully unregistered from the route'}), 200
 
 
 if __name__ == '__main__':

@@ -34,19 +34,25 @@ const Home: React.FC = () => {
 
   const joinRoute = async (routeId: string) => {
     try {
+      const token = localStorage.getItem('token');
+      const headers: HeadersInit = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       const response = await fetch(`/api/routes/${routeId}/ride`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        headers,
       });
+
       if (response.ok) {
         fetchRoutes(); // Refresh routes
+      } else {
+        console.error('Failed to join route:', await response.text());
       }
     } catch (err) {
       console.error('Failed to join route:', err);
     }
   };
+
 
   if (loading) return <div className="text-center mt-5"><h3>Loading routes...</h3></div>;
   if (error) return <div className="alert alert-danger mt-3">{error}</div>;

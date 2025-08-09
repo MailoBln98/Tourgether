@@ -17,8 +17,8 @@ const Upload: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!gpxFile) {
-      setMessage('Please select a GPX file');
+    if (!gpxFile || !startTime || !startPoint) {
+      setMessage('Please fill all fields and select a GPX file');
       setMessageType('error');
       return;
     }
@@ -27,15 +27,17 @@ const Upload: React.FC = () => {
     setMessage('');
 
     try {
-      const gpxData = await gpxFile.text();
+      const formData = new FormData();
+      formData.append('gpx_file', gpxFile);
+      formData.append('start_time', new Date(startTime).toISOString());
+      formData.append('start_point', startPoint);
       
       const response = await fetch('/api/upload_gpx', {
         method: 'POST',
         headers: {
-          'Content-Type': 'text/plain',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: gpxData
+        body: formData
       });
 
       if (response.ok) {
@@ -95,11 +97,14 @@ const Upload: React.FC = () => {
                     type="text"
                     className="form-control"
                     id="startPoint"
-                    placeholder="e.g. Munich, Germany"
+                    placeholder="e.g. Munich, Germany or Central Station Munich"
                     value={startPoint}
                     onChange={(e) => setStartPoint(e.target.value)}
                     required
                   />
+                  <div className="form-text">
+                    Enter a descriptive location name or address
+                  </div>
                 </div>
 
                 <div className="mb-3">

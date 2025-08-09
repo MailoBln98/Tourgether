@@ -7,7 +7,7 @@
    - **Windows (cmd.exe)**: `venv\Scripts\activate.bat`
    - **Windows (PowerShell)**: `venv\Scripts\Activate.ps1`
    - **Linux/Mac**: `source venv/bin/activate`
-3. Install dependencies: `pip install -r requirements.txt  
+3. Install dependencies: `pip install -r requirements.txt`  
 4. Start the app: `python app.py`  
 
 ## References

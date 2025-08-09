@@ -17,8 +17,8 @@ const Upload: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!gpxFile) {
-      setMessage('Please select a GPX file');
+    if (!gpxFile || !startTime || !startPoint) {
+      setMessage('Please fill all fields and select a GPX file');
       setMessageType('error');
       return;
     }
@@ -27,15 +27,17 @@ const Upload: React.FC = () => {
     setMessage('');
 
     try {
-      const gpxData = await gpxFile.text();
+      const formData = new FormData();
+      formData.append('gpx_file', gpxFile);
+      formData.append('start_time', new Date(startTime).toISOString());
+      formData.append('start_point', startPoint);
       
       const response = await fetch('/api/upload_gpx', {
         method: 'POST',
         headers: {
-          'Content-Type': 'text/plain',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: gpxData
+        body: formData
       });
 
       if (response.ok) {
@@ -90,16 +92,19 @@ const Upload: React.FC = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="startPoint" className="form-label">Start Point</label>
+                  <label htmlFor="startPoint" className="form-label">Start Point (GPS Coordinates)</label>
                   <input
                     type="text"
                     className="form-control"
                     id="startPoint"
-                    placeholder="e.g. Munich, Germany"
+                    placeholder="e.g. 52.45693768689539, 13.526196936079945"
                     value={startPoint}
                     onChange={(e) => setStartPoint(e.target.value)}
                     required
                   />
+                  <div className="form-text">
+                    Enter GPS coordinates in format: latitude, longitude
+                  </div>
                 </div>
 
                 <div className="mb-3">

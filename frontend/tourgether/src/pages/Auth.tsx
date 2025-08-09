@@ -1,19 +1,17 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "http://localhost:5000";
 
 const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
-
-  // Gemeinsame States
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // Nur für Register
   const [name, setName] = useState("");
-
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate(); // <--- hier
 
   const toggleForm = () => {
     setMessage(null);
@@ -30,7 +28,6 @@ const Auth: React.FC = () => {
 
     try {
       if (isLogin) {
-        // Login
         const response = await fetch(`${API_URL}/api/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -43,7 +40,7 @@ const Auth: React.FC = () => {
           if (token) {
             sessionStorage.setItem("token", token);
             setMessage("Login erfolgreich!");
-            // Optional: Navigation z.B. window.location.href = "/upload";
+            navigate("/"); 
           } else {
             setMessage("Token vom Server nicht erhalten.");
           }
@@ -53,7 +50,6 @@ const Auth: React.FC = () => {
           setMessage("Login fehlgeschlagen.");
         }
       } else {
-        // Register
         const response = await fetch(`${API_URL}/api/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

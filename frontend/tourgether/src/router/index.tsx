@@ -4,7 +4,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Home from '../pages/Home'
 import Upload from '../pages/Upload'
-import Login from '../pages/Login'
+import Auth from '../pages/Auth'
 
 const AppRouter: React.FC = () => {
   return (
@@ -14,7 +14,7 @@ const AppRouter: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/upload" element={<Upload />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Auth />} />
         </Routes>
       </main>
       <Footer />

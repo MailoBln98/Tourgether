@@ -79,6 +79,7 @@ def upload_gpx() -> Response:
 
     Expects a multipart/form-data request with the following fields:
     - 'gpx_file': The GPX file itself.
+    - 'route_name': The name of the route.
     - 'start_time': The start date and time in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
     - 'start_point': A string describing the starting location as coordinates (e.g., "52.45693768689539, 13.526196936079945").
 

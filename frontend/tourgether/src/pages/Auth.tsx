@@ -39,7 +39,7 @@ const Auth: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
-          const token = data.token;
+          const token = data.access_token;
           if (token) {
             sessionStorage.setItem("token", token);
             setMessage("Login erfolgreich!");

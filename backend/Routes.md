@@ -33,7 +33,9 @@ Die user id (`_id`) ist im JWT-Token enthalten, um den aktuell eingeloggten Benu
       {
         "_id": "route_id",
         "gpx": "raw_gpx_data",
+        "name": "route_name",
         "owner_uuid": "creator_id",
+        "owner_name": "creator_name",
         "start_time": "ISO 8601 format",
         "start_point": "GPS coordinates",
         "registered_users": ["user_id1", "user_id2"],

@@ -1,6 +1,7 @@
 # database.py
 
 import uuid
+import os
 from datetime import datetime
 from bson.objectid import ObjectId
 from bson.objectid import ObjectId
@@ -9,13 +10,17 @@ from pymongo import MongoClient
 from pymongo.database import Database, Collection
 from pymongo.results import InsertOneResult, UpdateResult
 from typing import Any, Dict, List, Optional
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # HTW MongoDB credentials
-db_user = 'tourgether_admin'
-db_pass = 'X1AaylGGK'
-db_name = 'tourgether'
-dbHostname = "mongodb1.f4.htw-berlin.de"
-dbPort = 27017
+db_user = os.getenv('DB_USER')
+db_pass = os.getenv('DB_PASS')
+db_name = os.getenv('DB_NAME')
+dbHostname = os.getenv('DB_HOSTNAME')
+dbPort = int(os.getenv('DB_PORT', 27017))
 
 # Connection URI for HTW MongoDB
 uri = f"mongodb://{db_user}:{db_pass}@{dbHostname}:{dbPort}/{db_name}?authSource={db_name}"

@@ -3,6 +3,7 @@ from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
+from flask_cors import CORS
 from DataBase import UserRepository, GpxRepository
 
 from typing import Any, Dict, List, Optional
@@ -19,6 +20,9 @@ app.config["MONGO_URI"] = "mongodb://localhost:27017/tourgether"
 mongo: PyMongo = PyMongo(app)
 bcrypt: Bcrypt = Bcrypt(app)
 jwt: JWTManager = JWTManager(app)
+
+# --- CORS ---
+CORS(app)  # Erlaubt CORS für alle Domains und alle Routen (kann noch eingeschränkt werden)
 
 # --- Repository Instances ---
 # We instantiate our repositories, passing them the necessary dependencies (db connection, bcrypt)

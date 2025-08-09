@@ -4,7 +4,7 @@ from flask_bcrypt import Bcrypt
 from datetime import datetime
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 from flask_cors import CORS
-from DataBase import UserRepository, GpxRepository
+from DataBase import db, UserRepository, GpxRepository
 
 from typing import Any, Dict, List, Optional
 from pymongo.results import InsertOneResult, UpdateResult
@@ -26,8 +26,8 @@ CORS(app)  # Erlaubt CORS für alle Domains und alle Routen (kann noch eingeschr
 
 # --- Repository Instances ---
 # We instantiate our repositories, passing them the necessary dependencies (db connection, bcrypt)
-user_repo: UserRepository = UserRepository(db=mongo.db, bcrypt=bcrypt)
-gpx_repo: GpxRepository = GpxRepository(db=mongo.db)
+user_repo = UserRepository(db, bcrypt)
+gpx_repo = GpxRepository(db)
 
 
 # --- Authentication Routes ---

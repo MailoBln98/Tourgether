@@ -5,9 +5,24 @@ from datetime import datetime
 from bson.objectid import ObjectId
 from bson.objectid import ObjectId
 from flask_bcrypt import Bcrypt
+from pymongo import MongoClient
 from pymongo.database import Database, Collection
 from pymongo.results import InsertOneResult, UpdateResult
 from typing import Any, Dict, List, Optional
+
+# HTW MongoDB credentials
+db_user = 'tourgether_admin'
+db_pass = 'X1AaylGGK'
+db_name = 'tourgether'
+dbHostname = "mongodb1.f4.htw-berlin.de"
+dbPort = 27017
+
+# Connection URI for HTW MongoDB
+uri = f"mongodb://{db_user}:{db_pass}@{dbHostname}:{dbPort}/{db_name}?authSource={db_name}"
+
+# Create MongoDB client
+client = MongoClient(uri)
+db = client[db_name]
 
 MongoDoc = Dict[str, Any]
 

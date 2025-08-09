@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { Route } from '../types/Route';
+import { useNavigate } from 'react-router-dom';
 import GPXThumbnail from '../components/GPXThumbnail';
 
 function getCurrentUserId() {
@@ -18,6 +19,8 @@ const Home: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const currentUserId = getCurrentUserId();
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     fetchRoutes();
@@ -122,7 +125,11 @@ const Home: React.FC = () => {
             const isRegistered = route.registered_users.includes(currentUserId);
             return (
               <div key={route._id} className="col-md-6 col-lg-4 mb-4">
-                <div className="card h-100">
+                <div
+                  className="card h-100"
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => navigate(`/route/${route._id}`)}
+                >
                   <div className="card-body">
                     <GPXThumbnail gpx={route.gpx} />
                     <h5 className="card-title">{route.name}</h5>
@@ -147,7 +154,7 @@ const Home: React.FC = () => {
                       <span className="badge bg-secondary">{route.registered_users.length} riders</span>
                     </div>
                   </div>
-                  <div className="card-footer d-flex flex-column gap-2">
+                  <div className="card-footer d-flex flex-column gap-2" onClick={e => e.stopPropagation()}>
                     {isOwner ? (
                       <div className="text-center text-muted" style={{fontSize: '0.9rem', padding: '0.5rem 0'}}>You created this tour</div>
                     ) : (
@@ -155,7 +162,7 @@ const Home: React.FC = () => {
                         {!isRegistered && (
                           <button 
                             className="btn btn-primary w-100"
-                            onClick={() => joinRoute(route._id)}
+                            onClick={(e) => { e.stopPropagation(); joinRoute(route._id); }}
                           >
                             Join Route
                           </button>
@@ -163,7 +170,7 @@ const Home: React.FC = () => {
                         {isRegistered && (
                           <button
                             className="btn btn-warning w-100"
-                            onClick={() => leaveRoute(route._id)}
+                            onClick={(e) => { e.stopPropagation(); leaveRoute(route._id); }}
                           >
                             Leave Route
                           </button>

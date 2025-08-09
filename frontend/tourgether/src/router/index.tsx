@@ -1,10 +1,11 @@
-import React from 'react'
-import { Routes, Route } from 'react-router-dom'
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-import Home from '../pages/Home'
-import Upload from '../pages/Upload'
-import Auth from '../pages/Auth'
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import Home from '../pages/Home';
+import Upload from '../pages/Upload';
+import Auth from '../pages/Auth';
+import RouteDetailScreen from '../pages/RouteDetailScreen';
 
 const AppRouter: React.FC = () => {
   return (
@@ -15,11 +16,12 @@ const AppRouter: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/upload" element={<Upload />} />
           <Route path="/login" element={<Auth />} />
+          <Route path="/route/:routeId" element={<RouteDetailScreen />} />
         </Routes>
       </main>
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default AppRouter
+export default AppRouter;

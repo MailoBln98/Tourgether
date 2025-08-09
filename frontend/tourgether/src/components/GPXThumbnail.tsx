@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 
 type Props = {
   gpx: string;
+  height?: number;
 };
 
 function parseGPX(gpx: string): [number, number][] {
@@ -30,13 +31,13 @@ const FitBounds: React.FC<{ positions: [number, number][] }> = ({ positions }) =
   return null;
 };
 
-const GPXThumbnail: React.FC<Props> = ({ gpx }) => {
+const GPXThumbnail: React.FC<Props> = ({ gpx, height = 120 }) => {
   const positions = parseGPX(gpx);
   const center = positions.length > 0 ? positions[0] : [51, 10];
 
   return (
     <MapContainer
-      style={{ height: 120, width: '100%' }}
+      style={{ height, width: '100%' }}
       center={center}
       zoom={8}
       scrollWheelZoom={false}

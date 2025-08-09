@@ -61,6 +61,13 @@ class UserRepository:
     def find_by_uuid(self, user_uuid) -> Optional[MongoDoc]:
         """Finds a user by their unique ID (_id)."""
         return self.users.find_one({'_id': user_uuid})
+    
+    def find_multiple_by_uuids(self, user_uuids: List[str]) -> List[MongoDoc]:
+        """Finds multiple users by their UUIDs and returns only name and _id."""
+        return list(self.users.find(
+            {'_id': {'$in': user_uuids}},
+            {'name': 1, '_id': 1}
+        ))
 
 
 class GpxRepository:

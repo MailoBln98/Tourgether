@@ -69,6 +69,26 @@ def login() -> Response:
 
     return jsonify({'message': 'Invalid credentials'}), 401
 
+@app.route('/api/users/batch', methods=['POST'])
+def get_users_batch() -> Response:
+    """Get multiple users by their UUIDs."""
+    try:
+        data = request.get_json()
+        user_ids = data.get('user_ids', [])
+        
+        if not user_ids or not isinstance(user_ids, list):
+            return jsonify({'message': 'user_ids array required'}), 400
+        
+        users = user_repo.find_multiple_by_uuids(user_ids)
+        
+        # Convert to dict for easier frontend access
+        user_dict = {user['_id']: user['name'] for user in users}
+        
+        return jsonify(user_dict), 200
+        
+    except Exception as e:
+        return jsonify({'message': 'Server error'}), 500
+
 
 # --- API Routes ---
 

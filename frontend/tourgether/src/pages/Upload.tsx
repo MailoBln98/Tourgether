@@ -92,18 +92,18 @@ const Upload: React.FC = () => {
                 </div>
 
                 <div className="mb-3">
-                  <label htmlFor="startPoint" className="form-label">Start Point (GPS Coordinates)</label>
+                  <label htmlFor="startPoint" className="form-label">Start Point</label>
                   <input
                     type="text"
                     className="form-control"
                     id="startPoint"
-                    placeholder="e.g. 52.45693768689539, 13.526196936079945"
+                    placeholder="e.g. Munich, Germany or Central Station Munich"
                     value={startPoint}
                     onChange={(e) => setStartPoint(e.target.value)}
                     required
                   />
                   <div className="form-text">
-                    Enter GPS coordinates in format: latitude, longitude
+                    Enter a descriptive location name or address
                   </div>
                 </div>
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Upload: React.FC = () => {
   const [startTime, setStartTime] = useState<string>('');
@@ -7,6 +8,7 @@ const Upload: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
+  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -23,6 +25,13 @@ const Upload: React.FC = () => {
       return;
     }
 
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      setMessage('Please login first');
+      setMessageType('error');
+      return;
+    }
+
     setLoading(true);
     setMessage('');
 
@@ -35,7 +44,7 @@ const Upload: React.FC = () => {
       const response = await fetch('/api/upload_gpx', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: formData
       });
@@ -45,12 +54,11 @@ const Upload: React.FC = () => {
         setMessage(`Route uploaded successfully! Route ID: ${result.route_id}`);
         setMessageType('success');
         
-        // Reset form
-        setStartTime('');
-        setStartPoint('');
-        setGpxFile(null);
-        const fileInput = document.getElementById('gpxFile') as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
+        // Navigate to home page after successful upload
+        setTimeout(() => {
+          navigate('/');
+        }, 500); // Wait 0.5 seconds to show success message
+        
       } else {
         setMessage('Failed to upload route');
         setMessageType('error');
@@ -97,13 +105,13 @@ const Upload: React.FC = () => {
                     type="text"
                     className="form-control"
                     id="startPoint"
-                    placeholder="e.g. Munich, Germany or Central Station Munich"
+                    placeholder="e.g. Munich, Germany"
                     value={startPoint}
                     onChange={(e) => setStartPoint(e.target.value)}
                     required
                   />
                   <div className="form-text">
-                    Enter a descriptive location name or address
+                    Enter a descriptive location name
                   </div>
                 </div>
 

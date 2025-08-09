@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-interface Route {
-  _id: string;
-  gpx: string;
-  owner_uuid: string;
-  registered_users: string[];
-}
+import type { Route } from '../types/Route';
 
 const Home: React.FC = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -34,7 +28,7 @@ const Home: React.FC = () => {
 
   const joinRoute = async (routeId: string) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       const headers: HeadersInit = {};
       if (token) headers['Authorization'] = `Bearer ${token}`;
 
@@ -44,7 +38,7 @@ const Home: React.FC = () => {
       });
 
       if (response.ok) {
-        fetchRoutes(); // Refresh routes
+        fetchRoutes();
       } else {
         console.error('Failed to join route:', await response.text());
       }
@@ -53,6 +47,33 @@ const Home: React.FC = () => {
     }
   };
 
+  const formatDate = (dateString: string | { $date: string }) => {
+    let dateValue: string;
+    
+    if (typeof dateString === 'object' && dateString.$date) {
+      dateValue = dateString.$date;
+    } else if (typeof dateString === 'string') {
+      dateValue = dateString;
+    } else {
+      return 'No date provided';
+    }
+    
+    try {
+      const date = new Date(dateValue);
+      if (isNaN(date.getTime())) {
+        return 'Invalid Date';
+      }
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (err) {
+      return 'Invalid Date';
+    }
+  };
 
   if (loading) return <div className="text-center mt-5"><h3>Loading routes...</h3></div>;
   if (error) return <div className="alert alert-danger mt-3">{error}</div>;
@@ -70,14 +91,30 @@ const Home: React.FC = () => {
               <div className="card h-100">
                 <div className="card-body">
                   <h5 className="card-title">Route #{route._id.slice(-6)}</h5>
-                  <p className="card-text">
-                    <small className="text-muted">
-                      Owner: {route.owner_uuid}
-                    </small>
-                  </p>
-                  <p className="card-text">
-                    <i className="fas fa-users"></i> {route.registered_users.length} riders registered
-                  </p>
+                  
+                  <div className="mb-2">
+                    <strong>📍 Start Location:</strong>
+                    <br />
+                    <span>{route.start_point}</span>
+                  </div>
+                  
+                  <div className="mb-2">
+                    <strong>🕒 Start Time:</strong>
+                    <br />
+                    <span>{formatDate(route.start_time)}</span>
+                  </div>
+                  
+                  <div className="mb-2">
+                    <strong>👤 Creator:</strong>
+                    <br />
+                    <small className="text-muted">{route.owner_uuid}</small>
+                  </div>
+                  
+                  <div className="mb-2">
+                    <strong>🏍️ Registered Riders:</strong>
+                    <br />
+                    <span className="badge bg-secondary">{route.registered_users.length} riders</span>
+                  </div>
                 </div>
                 <div className="card-footer">
                   <button 

@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 const API_URL = "http://localhost:5000";
 
 const Auth: React.FC = () => {
+  const navigate = useNavigate();
+
+  const [isLoggedIn, setIsLoggedIn] = useState(() => !!sessionStorage.getItem("token"));
+
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -11,14 +15,19 @@ const Auth: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate(); // <--- hier
-
   const toggleForm = () => {
     setMessage(null);
     setIsLogin(!isLogin);
     setName("");
     setEmail("");
     setPassword("");
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    setIsLoggedIn(false);
+    setMessage("Erfolgreich ausgeloggt.");
+    navigate("/login"); // Oder zu einer anderen Route, z.B. "/"
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,8 +48,9 @@ const Auth: React.FC = () => {
           const token = data.access_token;
           if (token) {
             sessionStorage.setItem("token", token);
+            setIsLoggedIn(true);
             setMessage("Login erfolgreich!");
-            navigate("/"); 
+            navigate("/");
           } else {
             setMessage("Token vom Server nicht erhalten.");
           }
@@ -75,6 +85,24 @@ const Auth: React.FC = () => {
     }
   };
 
+  if (isLoggedIn) {
+    return (
+      <div style={{ padding: "2rem" }}>
+        <h2>Du bist bereits eingeloggt</h2>
+        {message && (
+          <div style={{ marginBottom: "1rem", color: "green" }}>{message}</div>
+        )}
+        <button
+          onClick={handleLogout}
+          style={{ padding: "0.5rem", cursor: "pointer" }}
+        >
+          Ausloggen
+        </button>
+      </div>
+    );
+  }
+
+  // Wenn nicht eingeloggt: Login/Register Formular wie gehabt
   return (
     <div style={{ padding: "2rem" }}>
       <h2>{isLogin ? "Login" : "Registrieren"}</h2>
@@ -124,7 +152,13 @@ const Auth: React.FC = () => {
         />
 
         <button type="submit" style={{ padding: "0.5rem" }} disabled={loading}>
-          {loading ? (isLogin ? "Anmelden..." : "Registrieren...") : isLogin ? "Anmelden" : "Registrieren"}
+          {loading
+            ? isLogin
+              ? "Anmelden..."
+              : "Registrieren..."
+            : isLogin
+            ? "Anmelden"
+            : "Registrieren"}
         </button>
       </form>
 

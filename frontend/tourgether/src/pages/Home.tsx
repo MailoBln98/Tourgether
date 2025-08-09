@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import type { Route } from '../types/Route';
+import GPXThumbnail from '../components/GPXThumbnail';
+
+function getCurrentUserId() {
+  const token = sessionStorage.getItem('token');
+  if (!token) return null;
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || payload.user_id || payload._id;
+  } catch {
+    return null;
+  }
+}
 
 const Home: React.FC = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const currentUserId = getCurrentUserId();
 
   useEffect(() => {
     fetchRoutes();
@@ -40,16 +53,36 @@ const Home: React.FC = () => {
       if (response.ok) {
         fetchRoutes();
       } else {
-        console.error('Failed to join route:', await response.text());
+        setError('Failed to join route');
       }
     } catch (err) {
-      console.error('Failed to join route:', err);
+      setError('Network error occurred');
+    }
+  };
+
+  const leaveRoute = async (routeId: string) => {
+    try {
+      const token = sessionStorage.getItem('token');
+      const headers: HeadersInit = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(`/api/routes/${routeId}/ride`, {
+        method: 'DELETE',
+        headers,
+      });
+
+      if (response.ok || response.status === 204) {
+        fetchRoutes();
+      } else {
+        setError('Failed to leave route');
+      }
+    } catch (err) {
+      setError('Network error occurred');
     }
   };
 
   const formatDate = (dateString: string | { $date: string }) => {
     let dateValue: string;
-    
     if (typeof dateString === 'object' && dateString.$date) {
       dateValue = dateString.$date;
     } else if (typeof dateString === 'string') {
@@ -57,7 +90,6 @@ const Home: React.FC = () => {
     } else {
       return 'No date provided';
     }
-    
     try {
       const date = new Date(dateValue);
       if (isNaN(date.getTime())) {
@@ -81,52 +113,68 @@ const Home: React.FC = () => {
   return (
     <div className="container mt-4">
       <h1 className="mb-4">Motorcycle Routes</h1>
-      
       {routes.length === 0 ? (
         <div className="alert alert-info">No routes available yet.</div>
       ) : (
         <div className="row">
-          {routes.map((route) => (
-            <div key={route._id} className="col-md-6 col-lg-4 mb-4">
-              <div className="card h-100">
-                <div className="card-body">
-                  <h5 className="card-title">Route #{route._id.slice(-6)}</h5>
-                  
-                  <div className="mb-2">
-                    <strong>📍 Start Location:</strong>
-                    <br />
-                    <span>{route.start_point}</span>
+          {routes.map((route) => {
+            const isOwner = route.owner_uuid === currentUserId;
+            const isRegistered = route.registered_users.includes(currentUserId);
+            return (
+              <div key={route._id} className="col-md-6 col-lg-4 mb-4">
+                <div className="card h-100">
+                  <div className="card-body">
+                    <GPXThumbnail gpx={route.gpx} />
+                    <h5 className="card-title">{route.name}</h5>
+                    <div className="mb-2">
+                      <strong>📍 Start Location:</strong>
+                      <br />
+                      <span>{route.start_point}</span>
+                    </div>
+                    <div className="mb-2">
+                      <strong>🕒 Start Time:</strong>
+                      <br />
+                      <span>{formatDate(route.start_time)}</span>
+                    </div>
+                    <div className="mb-2">
+                      <strong>👤 Creator:</strong>
+                      <br />
+                      <small className="text-muted">{route.owner_name}</small>
+                    </div>
+                    <div className="mb-2">
+                      <strong>🏍️ Registered Riders:</strong>
+                      <br />
+                      <span className="badge bg-secondary">{route.registered_users.length} riders</span>
+                    </div>
                   </div>
-                  
-                  <div className="mb-2">
-                    <strong>🕒 Start Time:</strong>
-                    <br />
-                    <span>{formatDate(route.start_time)}</span>
+                  <div className="card-footer d-flex flex-column gap-2">
+                    {isOwner ? (
+                      <div className="text-center text-muted" style={{fontSize: '0.9rem', padding: '0.5rem 0'}}>You created this tour</div>
+                    ) : (
+                      <>
+                        {!isRegistered && (
+                          <button 
+                            className="btn btn-primary w-100"
+                            onClick={() => joinRoute(route._id)}
+                          >
+                            Join Route
+                          </button>
+                        )}
+                        {isRegistered && (
+                          <button
+                            className="btn btn-warning w-100"
+                            onClick={() => leaveRoute(route._id)}
+                          >
+                            Leave Route
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
-                  
-                  <div className="mb-2">
-                    <strong>👤 Creator:</strong>
-                    <br />
-                    <small className="text-muted">{route.owner_uuid}</small>
-                  </div>
-                  
-                  <div className="mb-2">
-                    <strong>🏍️ Registered Riders:</strong>
-                    <br />
-                    <span className="badge bg-secondary">{route.registered_users.length} riders</span>
-                  </div>
-                </div>
-                <div className="card-footer">
-                  <button 
-                    className="btn btn-primary w-100"
-                    onClick={() => joinRoute(route._id)}
-                  >
-                    Join Route
-                  </button>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

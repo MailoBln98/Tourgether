@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const Upload: React.FC = () => {
+  const [routeName, setRouteName] = useState<string>('');
   const [startTime, setStartTime] = useState<string>('');
   const [startPoint, setStartPoint] = useState<string>('');
   const [gpxFile, setGpxFile] = useState<File | null>(null);
@@ -19,7 +20,7 @@ const Upload: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!gpxFile || !startTime || !startPoint) {
+    if (!routeName || !gpxFile || !startTime || !startPoint) {
       setMessage('Please fill all fields and select a GPX file');
       setMessageType('error');
       return;
@@ -36,29 +37,27 @@ const Upload: React.FC = () => {
     setMessage('');
 
     try {
-      const formData = new FormData();
-      formData.append('gpx_file', gpxFile);
-      formData.append('start_time', new Date(startTime).toISOString());
-      formData.append('start_point', startPoint);
-      
-      const response = await fetch('/api/upload_gpx', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body: formData
-      });
+        const formData = new FormData();
+        formData.append('gpx_file', gpxFile); // 1. GPX-Datei
+        formData.append('name', routeName); // 2. Name der Route
+        formData.append('start_time', new Date(startTime).toISOString()); // 3. Startzeit
+        formData.append('start_point', startPoint); // 4. Startpunkt
+
+        const response = await fetch('/api/upload_gpx', {
+            method: 'POST',
+            headers: {
+            'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
 
       if (response.ok) {
         const result = await response.json();
         setMessage(`Route uploaded successfully! Route ID: ${result.route_id}`);
         setMessageType('success');
-        
-        // Navigate to home page after successful upload
         setTimeout(() => {
           navigate('/');
-        }, 500); // Wait 0.5 seconds to show success message
-        
+        }, 500);
       } else {
         setMessage('Failed to upload route');
         setMessageType('error');
@@ -87,6 +86,19 @@ const Upload: React.FC = () => {
               )}
 
               <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label htmlFor="routeName" className="form-label">Route Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="routeName"
+                    placeholder="e.g. Berlin to Munich"
+                    value={routeName}
+                    onChange={(e) => setRouteName(e.target.value)}
+                    required
+                  />
+                </div>
+
                 <div className="mb-3">
                   <label htmlFor="startTime" className="form-label">Start Time</label>
                   <input

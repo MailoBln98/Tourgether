@@ -1,5 +1,5 @@
-<div align="center">
-  <img src="frontend/tourgether/public/Tourgether_logo.png" alt="Tourgether Logo" width="200" height="auto">
+<div align="center" style="margin: 10px 0;">
+  <img src="frontend/tourgether/public/Tourgether_logo.png" alt="Tourgether Logo" width="160" height="auto">
   
   # Tourgether
   

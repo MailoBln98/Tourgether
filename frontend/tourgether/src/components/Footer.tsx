@@ -9,14 +9,14 @@ const Footer: React.FC = () => (
           <nav className="mb-3">
             <Link 
               to="/about" 
-              className="text-muted text-decoration-none me-4 hover-text-dark"
+              className="text-muted me-4 hover-text-dark"
               style={{ transition: 'color 0.2s' }}
             >
               About Tourgether
             </Link>
             <Link 
               to="/legal" 
-              className="text-muted text-decoration-none hover-text-dark"
+              className="text-muted hover-text-dark"
               style={{ transition: 'color 0.2s' }}
             >
               Legal & Privacy

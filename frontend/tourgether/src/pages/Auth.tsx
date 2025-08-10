@@ -50,6 +50,19 @@ const Auth: React.FC = () => {
     }
   };
 
+  const getVerificationMessage = () => {
+    if (verificationStatus === 'success') {
+      return 'Email successfully verified! You can now log in.';
+    }
+    if (verificationStatus === 'error') {
+      return 'Email verification failed. Please check if the link is valid or expired.';
+    }
+    if (verificationStatus === 'pending') {
+      return 'Please check your email and click the verification link to activate your account.';
+    }
+    return message;
+  };
+
   const toggleForm = () => {
     setMessage(null);
     setIsLogin(!isLogin);
@@ -93,8 +106,8 @@ const Auth: React.FC = () => {
         } else {
           try {
             const errorData = await response.json();
-            if (response.status === 403 && errorData.message.includes('not verified')) {
-              setMessage("Please verify your email before logging in.");
+            if (response.status === 403 && (errorData.message.includes('not verified') || errorData.message.includes('Email not verified'))) {
+              setMessage("Your email is not verified yet. Please check your email and click the verification link.");
               setVerificationStatus('pending');
             } else {
               setMessage(errorData.message || errorData.error || "Login fehlgeschlagen.");
@@ -150,17 +163,18 @@ const Auth: React.FC = () => {
           <div className="col-md-6 col-lg-4">
             <div className="card p-4">
               <h2 className="mb-3">You are logged in</h2>
-              {message && (
+              {(message || verificationStatus) && (
                 <div
-                  className={`alert mb-3 ${message.includes("erfolgreich") ? "alert-success" :
-                    message.includes("Log in") || message.includes("need to be") ? "alert-info" :
+                  className={`alert mb-3 ${verificationStatus === 'success' || message?.includes("erfolgreich") || message?.includes("successful") ? "alert-success" :
+                    verificationStatus === 'pending' || message?.includes("Log in") || message?.includes("need to be") || message?.includes("check your email") ? "alert-info" :
                       "alert-danger"
                     }`}
                   role="alert"
                 >
-                  {message}
+                  {getVerificationMessage()}
                 </div>
               )}
+
               <button
                 onClick={handleLogout}
                 className="btn btn-danger w-100"
@@ -181,17 +195,18 @@ const Auth: React.FC = () => {
           <div className="card p-4">
             <h2 className="mb-3">{isLogin ? "Login" : "Register"}</h2>
 
-            {message && (
+            {(message || verificationStatus) && (
               <div
-                className={`alert mb-3 ${message.includes("erfolgreich") || message.includes("successful") || verificationStatus === 'success' ? "alert-success" :
-                    message.includes("Log in") || message.includes("need to be") || message.includes("check your email") ? "alert-info" :
-                      "alert-danger"
+                className={`alert mb-3 ${verificationStatus === 'success' || message?.includes("erfolgreich") || message?.includes("successful") ? "alert-success" :
+                  verificationStatus === 'pending' || message?.includes("Log in") || message?.includes("need to be") || message?.includes("check your email") ? "alert-info" :
+                    "alert-danger"
                   }`}
                 role="alert"
               >
-                {message}
+                {getVerificationMessage()}
               </div>
             )}
+
 
             <form onSubmit={handleSubmit}>
               {!isLogin && (

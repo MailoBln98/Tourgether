@@ -8,10 +8,20 @@ Diese Datei dokumentiert die Routen des Backends der Tourgether-Anwendung. Jede 
   - Erwartet JSON mit `name`, `email` und `password`.
   - Gibt 201 bei Erfolg, 400 bei fehlenden Daten oder 409 bei bereits registrierter E-Mail zurück.
 
+- **POST /api/auth/verify/<token>**
+  - Bestätigt die E-Mail-Adresse eines Benutzers.
+  - Erwartet den Bestätigungstoken in der URL.
+  - Gibt 200 bei Erfolg, 400 bei ungültigem oder abgelaufenem Token zurück.
+
 - **POST /api/auth/login**
   - Meldet einen Benutzer an.
     - Erwartet JSON mit `email` und `password`.
-    - Gibt 200 mit JWT Zugangstoken bei Erfolg, 400 bei fehlenden Daten oder 401 bei ungültigen Anmeldedaten zurück.
+    - Gibt 200 mit JWT Zugangstoken bei Erfolg, 400 bei fehlenden Daten oder 401 bei ungültigen Anmeldedatenoder nicht verifizierter E-Mail zurück.
+
+- **POST /api/users/batch**
+  - Gibt mehrere Benutzer anhand ihrer UUIDs zurück.
+  - Erwartet ein JSON-Objekt mit einem Array von `user_ids`.
+  - Gibt 200 mit den Benutzerdaten zurück oder 400 bei fehlenden oder ungültigen Daten.
 
 #### JWT-Token
 Die user id (`_id`) ist im JWT-Token enthalten, um den aktuell eingeloggten Benutzer zu identifizieren

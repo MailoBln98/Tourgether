@@ -5,6 +5,8 @@ from datetime import datetime
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
 from flask_cors import CORS
 from DataBase import db, UserRepository, GpxRepository
+from MailHandler import send_verification_email
+from dotenv import load_dotenv
 
 from typing import Any, Dict, List, Optional
 from pymongo.results import InsertOneResult, UpdateResult
@@ -47,8 +49,24 @@ def register() -> Response:
         return jsonify({'message': 'Email already registered'}), 409
 
     user_repo.create_user(data['name'], data['email'], data['password'])
+
+    user: Dict[str, Any] = user_repo.find_by_email(data['email'])
+
+    send_verification_email(data['email'], user['verification_token'])
+
     return jsonify({'message': 'User created successfully'}), 201
 
+@app.route('/api/auth/verify/<token>', methods=['POST'])
+def verify_user(token: str) -> Response:
+    """Verify a user's email address using a token."""
+    
+    user: Dict[str, Any] = user_repo.find_by_verify_token(token)
+
+    if user:
+        user_repo.verify_user(user['_id'], token)
+        return jsonify({'message': 'Email verified successfully'}), 200
+
+    return jsonify({'message': 'Invalid or expired token'}), 400
 
 @app.route('/api/auth/login', methods=['POST'])
 def login() -> Response:
@@ -63,9 +81,13 @@ def login() -> Response:
 
     user: Dict[str, Any] = user_repo.find_by_email(data['email'])
 
+    if user:
+        if user.get('is_verified') is False:
+            return jsonify({'message': 'Email not verified'}), 401
+
     if user and bcrypt.check_password_hash(user['password'], data['password']):
         access_token: str = create_access_token(identity=user['_id'])
-        return jsonify({'access_token': access_token})
+        return jsonify({'access_token': access_token}), 200
 
     return jsonify({'message': 'Invalid credentials'}), 401
 

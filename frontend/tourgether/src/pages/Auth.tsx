@@ -1,19 +1,67 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const API_URL = "http://localhost:5000";
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!sessionStorage.getItem("token"));
-
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'success' | 'error' | null>(null);
+
+  useEffect(() => {
+    const loginMessage = sessionStorage.getItem('loginMessage');
+    if (loginMessage) {
+      setMessage(loginMessage);
+      sessionStorage.removeItem('loginMessage');
+    }
+
+    const token = searchParams.get('token');
+    if (token) {
+      verifyEmail(token);
+    }
+  }, [searchParams]);
+
+  const verifyEmail = async (token: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/verify/${token}`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        setVerificationStatus('success');
+        setMessage('Email successfully verified! You can now log in.');
+        setIsLogin(true);
+      } else {
+        const errorData = await response.json();
+        setVerificationStatus('error');
+        setMessage(errorData.message || 'Email verification failed.');
+      }
+    } catch (error) {
+      setVerificationStatus('error');
+      setMessage('Network error during email verification.');
+    }
+  };
+
+  const getVerificationMessage = () => {
+    if (verificationStatus === 'success') {
+      return 'Email successfully verified! You can now log in.';
+    }
+    if (verificationStatus === 'error') {
+      return 'Email verification failed. Please check if the link is valid or expired.';
+    }
+    if (verificationStatus === 'pending') {
+      return 'Please check your email and click the verification link to activate your account.';
+    }
+    return message;
+  };
 
   const toggleForm = () => {
     setMessage(null);
@@ -21,13 +69,14 @@ const Auth: React.FC = () => {
     setName("");
     setEmail("");
     setPassword("");
+    setVerificationStatus(null);
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     setIsLoggedIn(false);
-    setMessage("Erfolgreich ausgeloggt.");
-    navigate("/login"); // Oder zu einer anderen Route, z.B. "/"
+    setMessage("Successfully logged out.");
+    navigate("/");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,10 +103,24 @@ const Auth: React.FC = () => {
           } else {
             setMessage("Token vom Server nicht erhalten.");
           }
-        } else if (response.status === 401) {
-          setMessage("Ungültige Anmeldedaten.");
         } else {
-          setMessage("Login fehlgeschlagen.");
+          try {
+            const errorData = await response.json();
+            if (response.status === 403 && (errorData.message.includes('not verified') || errorData.message.includes('Email not verified'))) {
+              setMessage("Your email is not verified yet. Please check your email and click the verification link.");
+              setVerificationStatus('pending');
+            } else {
+              setMessage(errorData.message || errorData.error || "Login fehlgeschlagen.");
+            }
+          } catch (jsonError) {
+            if (response.status === 401) {
+              setMessage("Ungültige Anmeldedaten.");
+            } else if (response.status === 400) {
+              setMessage("Bitte überprüfen Sie Ihre Eingaben.");
+            } else {
+              setMessage("Login fehlgeschlagen.");
+            }
+          }
         }
       } else {
         const response = await fetch(`${API_URL}/api/auth/register`, {
@@ -67,19 +130,27 @@ const Auth: React.FC = () => {
         });
 
         if (response.status === 201) {
-          setMessage("Registrierung erfolgreich! Bitte jetzt einloggen.");
-          setIsLogin(true);
+          setMessage("Registration successful! Please check your email to verify your account before logging in.");
+          setVerificationStatus('pending');
           setName("");
-          setEmail("");
           setPassword("");
-        } else if (response.status === 409) {
-          setMessage("Email bereits registriert.");
         } else {
-          setMessage("Registrierung fehlgeschlagen.");
+          try {
+            const errorData = await response.json();
+            setMessage(errorData.message || errorData.error || "Registrierung fehlgeschlagen.");
+          } catch (jsonError) {
+            if (response.status === 409) {
+              setMessage("E-Mail-Adresse bereits registriert.");
+            } else if (response.status === 400) {
+              setMessage("Bitte überprüfen Sie Ihre Eingaben.");
+            } else {
+              setMessage("Registrierung fehlgeschlagen.");
+            }
+          }
         }
       }
     } catch (error) {
-      setMessage("Netzwerkfehler.");
+      setMessage("Netzwerkfehler. Bitte versuchen Sie es später erneut.");
     } finally {
       setLoading(false);
     }
@@ -87,95 +158,117 @@ const Auth: React.FC = () => {
 
   if (isLoggedIn) {
     return (
-      <div style={{ padding: "2rem" }}>
-        <h2>Du bist bereits eingeloggt</h2>
-        {message && (
-          <div style={{ marginBottom: "1rem", color: "green" }}>{message}</div>
-        )}
-        <button
-          onClick={handleLogout}
-          style={{ padding: "0.5rem", cursor: "pointer" }}
-        >
-          Ausloggen
-        </button>
+      <div className="container mt-5">
+        <div className="row justify-content-center">
+          <div className="col-md-6 col-lg-4">
+            <div className="card p-4">
+              <h2 className="mb-3">You are logged in</h2>
+              {(message || verificationStatus) && (
+                <div
+                  className={`alert mb-3 ${verificationStatus === 'success' || message?.includes("erfolgreich") || message?.includes("successful") ? "alert-success" :
+                    verificationStatus === 'pending' || message?.includes("Log in") || message?.includes("need to be") || message?.includes("check your email") ? "alert-info" :
+                      "alert-danger"
+                    }`}
+                  role="alert"
+                >
+                  {getVerificationMessage()}
+                </div>
+              )}
+
+              <button
+                onClick={handleLogout}
+                className="btn btn-danger w-100"
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Wenn nicht eingeloggt: Login/Register Formular wie gehabt
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>{isLogin ? "Login" : "Registrieren"}</h2>
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-6 col-lg-4">
+          <div className="card p-4">
+            <h2 className="mb-3">{isLogin ? "Login" : "Register"}</h2>
 
-      {message && (
-        <div
-          style={{
-            marginBottom: "1rem",
-            color: message.includes("erfolgreich") ? "green" : "red",
-          }}
-        >
-          {message}
+            {(message || verificationStatus) && (
+              <div
+                className={`alert mb-3 ${verificationStatus === 'success' || message?.includes("erfolgreich") || message?.includes("successful") ? "alert-success" :
+                  verificationStatus === 'pending' || message?.includes("Log in") || message?.includes("need to be") || message?.includes("check your email") ? "alert-info" :
+                    "alert-danger"
+                  }`}
+                role="alert"
+              >
+                {getVerificationMessage()}
+              </div>
+            )}
+
+
+            <form onSubmit={handleSubmit}>
+              {!isLogin && (
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              <div className="mb-3">
+                <input
+                  type="email"
+                  className="form-control"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary w-100"
+                disabled={loading}
+              >
+                {loading
+                  ? isLogin
+                    ? "Logging in..."
+                    : "Registering..."
+                  : isLogin
+                    ? "Log in"
+                    : "Register"}
+              </button>
+            </form>
+
+            <button
+              onClick={toggleForm}
+              className="btn btn-link mt-3 w-100"
+              type="button"
+            >
+              {isLogin ? "Create a new account" : "Go to login"}
+            </button>
+          </div>
         </div>
-      )}
-
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", maxWidth: "300px" }}
-      >
-        {!isLogin && (
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ marginBottom: "1rem", padding: "0.5rem" }}
-            required
-          />
-        )}
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ marginBottom: "1rem", padding: "0.5rem" }}
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Passwort"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ marginBottom: "1rem", padding: "0.5rem" }}
-          required
-        />
-
-        <button type="submit" style={{ padding: "0.5rem" }} disabled={loading}>
-          {loading
-            ? isLogin
-              ? "Anmelden..."
-              : "Registrieren..."
-            : isLogin
-            ? "Anmelden"
-            : "Registrieren"}
-        </button>
-      </form>
-
-      <button
-        onClick={toggleForm}
-        style={{
-          marginTop: "1rem",
-          padding: "0.5rem",
-          background: "none",
-          border: "none",
-          color: "blue",
-          textDecoration: "underline",
-          cursor: "pointer",
-        }}
-      >
-        {isLogin ? "Neuen Account erstellen" : "Zur Anmeldung"}
-      </button>
+      </div>
     </div>
   );
 };

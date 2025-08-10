@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600&family=Roboto+Slab:wght@600&display=swap');
+
+.home-heading,
+.route-detail-heading {
+  font-family: 'Oswald', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+.oswald-info {
+  font-family: 'Roboto Slab', 'Georgia', serif;
+  letter-spacing: 0.5px;
+}
+
+.route-card-hover {
+  transition: transform 0.18s cubic-bezier(.4,2,.6,1), box-shadow 0.18s;
+}
+.route-card-hover:hover, .route-card-hover:focus {
+  transform: translateY(-6px) scale(1.025);
+  box-shadow: 0 0.5rem 1.5rem rgba(44,62,80,0.15), 0 0.125rem 0.25rem rgba(44,62,80,0.10);
+  border-color: #198754 !important;
+}
+
+.btn-ride-hover {
+  transition: none;
+}
+.btn-ride-hover:hover, .btn-ride-hover:focus {
+  filter: none;
+  box-shadow: none;
+  transform: none;
+  opacity: 1;
+}
+
+/* Animate the hand and minus icons inside the Join/Leave buttons on hover */
+.btn-ride-hover .fa-hand-paper,
+.btn-ride-hover .fa-minus {
+  transition: none;
+}
+
+.route-card-hover:hover .fa-hand-paper,
+.route-card-hover:hover .fa-minus,
+.btn-ride-hover:hover .fa-hand-paper,
+.btn-ride-hover:focus .fa-hand-paper,
+.btn-ride-hover:hover .fa-minus,
+.btn-ride-hover:focus .fa-minus {
+  animation: ride-icon-bounce 0.7s infinite;
+}
+
+
+@keyframes ride-icon-bounce {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.8); }
+  50%  { transform: scale(1.2); }
+  75%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Animation for Join/Leave Ride button transition */
+.ride-btn-transition-wrapper {
+  position: relative;
+  min-height: 48px;
+}
+.ride-btn-transition-inner {
+  transition: opacity 0.35s cubic-bezier(.4,2,.6,1), transform 0.35s cubic-bezier(.4,2,.6,1);
+  opacity: 1;
+  transform: scale(1);
+}
+.ride-btn-transition-inner.animating {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}

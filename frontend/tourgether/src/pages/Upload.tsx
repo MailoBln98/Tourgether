@@ -37,19 +37,19 @@ const Upload: React.FC = () => {
     setMessage('');
 
     try {
-        const formData = new FormData();
-        formData.append('gpx_file', gpxFile); // 1. GPX-Datei
-        formData.append('name', routeName); // 2. Name der Route
-        formData.append('start_time', new Date(startTime).toISOString()); // 3. Startzeit
-        formData.append('start_point', startPoint); // 4. Startpunkt
+      const formData = new FormData();
+      formData.append('gpx_file', gpxFile);
+      formData.append('name', routeName);
+      formData.append('start_time', new Date(startTime).toISOString());
+      formData.append('start_point', startPoint);
 
-        const response = await fetch('/api/upload_gpx', {
-            method: 'POST',
-            headers: {
-            'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
+      const response = await fetch('/api/upload_gpx', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
 
       if (response.ok) {
         const result = await response.json();
@@ -142,13 +142,38 @@ const Upload: React.FC = () => {
                   </div>
                 </div>
 
-                <button 
-                  type="submit" 
-                  className="btn btn-primary w-100"
-                  disabled={loading}
-                >
-                  {loading ? 'Uploading...' : 'Upload Route'}
-                </button>
+                {/* Buttons */}
+                <div className="d-flex gap-2">
+                  <button
+                    type="button"
+                    className="d-flex align-items-center justify-content-center gap-2 py-2 px-3 rounded btn-ride-hover flex-fill"
+                    style={{ backgroundColor: "#8b1f1f", color: "#fff", border: "none" }}
+                    onClick={() => navigate('/')}
+                    disabled={loading}
+                  >
+                    <i className="fas fa-times" aria-hidden="true"></i>
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="d-flex align-items-center justify-content-center gap-2 py-2 px-3 rounded btn-ride-hover flex-fill"
+                    style={{ backgroundColor: "#14532d", color: "#fff", border: "none" }}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin" aria-hidden="true"></i>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-upload" aria-hidden="true"></i>
+                        Upload Route
+                      </>
+                    )}
+                  </button>
+                </div>
               </form>
             </div>
           </div>

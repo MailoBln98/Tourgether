@@ -24,7 +24,7 @@ def send_verification_email(to_email: str, verification_token: str) -> None:
 
     email = (EmailBuilder()
              .subject("Tourgether | Verify your E-Mail")
-             .from_email("noreply@test-r6ke4n15njegon12.mlsender.net")
+             .from_email("noreply@test-65qngkdoyjdlwr12.mlsender.net")
              .to(to_email)
              .html(email_content)
              .build()

@@ -36,12 +36,15 @@
   transition: none;
 }
 
+.route-card-hover:hover .fa-hand-paper,
+.route-card-hover:hover .fa-minus,
 .btn-ride-hover:hover .fa-hand-paper,
 .btn-ride-hover:focus .fa-hand-paper,
 .btn-ride-hover:hover .fa-minus,
 .btn-ride-hover:focus .fa-minus {
   animation: ride-icon-bounce 0.7s infinite;
 }
+
 
 @keyframes ride-icon-bounce {
   0%   { transform: scale(1); }

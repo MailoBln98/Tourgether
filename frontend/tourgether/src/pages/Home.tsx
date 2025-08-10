@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import type { Route } from '../types/Route';
 import { useNavigate } from 'react-router-dom';
 import GPXThumbnail from '../components/GPXThumbnail';
-
-// Add this for custom hover styles
 import './Home.css';
 
 function getCurrentUserId() {
@@ -30,6 +28,16 @@ const Home: React.FC = () => {
     fetchRoutes();
   }, []);
 
+  const handleCardClick = (routeId: string) => {
+    if (!currentUserId) {
+      sessionStorage.setItem('loginMessage', 'Log in to see more details for the route');
+      navigate('/login');
+      return;
+    }
+    navigate(`/route/${routeId}`);
+  };
+
+
   const fetchRoutes = async () => {
     try {
       const response = await fetch('/api/routes');
@@ -52,7 +60,18 @@ const Home: React.FC = () => {
     }
   };
 
+  const checkLoginAndRedirect = () => {
+    if (!currentUserId) {
+      sessionStorage.setItem('loginMessage', 'You need to be logged in to join a ride');
+      navigate('/login');
+      return false;
+    }
+    return true;
+  };
+
   const joinRoute = async (routeId: string) => {
+    if (!checkLoginAndRedirect()) return;
+
     setButtonAnimating((prev) => ({ ...prev, [routeId]: true }));
     try {
       const token = sessionStorage.getItem('token');
@@ -81,6 +100,7 @@ const Home: React.FC = () => {
   };
 
   const leaveRoute = async (routeId: string) => {
+    if (!checkLoginAndRedirect()) return;
     setButtonAnimating((prev) => ({ ...prev, [routeId]: true }));
     try {
       const token = sessionStorage.getItem('token');
@@ -155,8 +175,8 @@ const Home: React.FC = () => {
                   style={{ border: "2px solid #dee2e6" }}
                   role="button"
                   tabIndex={0}
-                  onClick={() => navigate(`/route/${route._id}`)}
-                  onKeyPress={e => { if (e.key === 'Enter') navigate(`/route/${route._id}`); }}
+                  onClick={() => handleCardClick(route._id)}
+                  onKeyPress={e => { if (e.key === 'Enter') handleCardClick(route._id); }}
                 >
                   <div className="card-body">
                     <GPXThumbnail gpx={route.gpx} height={120} zoomable={false} />

@@ -139,7 +139,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="container mt-4">
-      <h1 className="mb-4">FIND YOUR RIDE</h1>
+      <h1 className="mb-4 home-heading">FIND YOUR RIDE</h1>
       {routes.length === 0 ? (
         <div className="alert alert-info">No routes available yet.</div>
       ) : (
@@ -162,22 +162,22 @@ const Home: React.FC = () => {
                     <GPXThumbnail gpx={route.gpx} height={120} zoomable={false} />
                     <h5 className="card-title">{route.name}</h5>
                     <div className="mb-2">
-                      <strong>📍 Start Location:</strong>
+                      <strong className="oswald-info">📍 Start Location:</strong>
                       <br />
                       <span>{route.start_point}</span>
                     </div>
                     <div className="mb-2">
-                      <strong>🕒 Start Time:</strong>
+                      <strong className="oswald-info">🕒 Start Time:</strong>
                       <br />
                       <span>{formatDate(route.start_time)}</span>
                     </div>
                     <div className="mb-2">
-                      <strong>👤 Creator:</strong>
+                      <strong className="oswald-info">👤 Creator:</strong>
                       <br />
                       <small className="text-muted">{route.owner_name}</small>
                     </div>
                     <div className="mb-2">
-                      <strong>🏍️ Registered Riders:</strong>
+                      <strong className="oswald-info">🏍️ Registered Riders:</strong>
                       <br />
                       <span className="badge bg-secondary">{route.registered_users.length} riders</span>
                     </div>

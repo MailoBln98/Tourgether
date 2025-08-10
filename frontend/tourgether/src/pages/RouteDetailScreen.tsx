@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import GPXThumbnail from '../components/GPXThumbnail';
 import type { Route } from '../types/Route';
-import './Home.css'; // Reuse the button animation styles from Home
+import './Home.css';
 
 const RouteDetailScreen: React.FC = () => {
     const { routeId } = useParams();
@@ -222,22 +222,22 @@ const RouteDetailScreen: React.FC = () => {
           <div className="col-lg-8">
             <div className="card shadow-sm">
               <div className="card-body">
-                <h2 className="card-title mb-3">{route.name}</h2>
+                <h2 className="card-title mb-3 route-detail-heading">{route.name}</h2>
                 <div className="mb-4 text-center">
                   <GPXThumbnail gpx={route.gpx} height={320} zoomable />
                 </div>
                 <ul className="list-group list-group-flush mb-3">
                   <li className="list-group-item">
-                    <strong>📍 Start Location:</strong> {route.start_point}
+                    <strong className="oswald-info">📍 Start Location:</strong> {route.start_point}
                   </li>
                   <li className="list-group-item">
-                    <strong>🕒 Start Time:</strong> {formatDate(route.start_time)}
+                    <strong className="oswald-info">🕒 Start Time:</strong> {formatDate(route.start_time)}
                   </li>
                   <li className="list-group-item">
-                    <strong>👤 Creator:</strong> {route.owner_name || route.owner_uuid}
+                    <strong className="oswald-info">👤 Creator:</strong> {route.owner_name || route.owner_uuid}
                   </li>
                   <li className="list-group-item">
-                    <strong>🏍️ Registered Riders:</strong> {formatRiders()}
+                    <strong className="oswald-info">🏍️ Registered Riders:</strong> {formatRiders()}
                   </li>
                 </ul>
                 {/* Join/Leave Buttons with animation */}

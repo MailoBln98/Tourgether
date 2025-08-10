@@ -166,7 +166,6 @@ const Home: React.FC = () => {
         <div className="row">
           {routes.map((route) => {
             const isOwner = route.owner_uuid === currentUserId;
-            const isRegistered = route.registered_users.includes(currentUserId);
             const animating = buttonAnimating[route._id];
             return (
               <div key={route._id} className="col-md-6 col-lg-4 mb-4">

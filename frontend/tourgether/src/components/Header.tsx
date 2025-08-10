@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./Header.css"; // Add this import for custom styles
+import "./Header.css";
 
 const Header: React.FC = () => {
   const navigate = useNavigate();
@@ -22,15 +22,24 @@ const Header: React.FC = () => {
         <div className="container py-4 shadow-sm">
           <div className="d-flex flex-column">
             <Link
-              className="navbar-brand fs-2 fw-bold d-flex align-items-center"
+              className="navbar-brand fs-1 fw-bold d-flex align-items-center"
               to="/"
               style={{ fontFamily: "'Oswald', 'Segoe UI', Arial, sans-serif", letterSpacing: "1px" }}
             >
-              <i className="fas fa-motorcycle fs-2 header-moto-animate me-3" aria-hidden="true"></i>
+              <img 
+                src="/public/Tourgether_logo.png" 
+                alt="Tourgether Logo" 
+                className="me-3 logo-spin"
+                style={{ 
+                  marginTop: "1rem",
+                  height: "80px", 
+                  width: "auto",
+                }}
+              />
               Tourgether
             </Link>
             <span
-              className="text-light fs-6 fst-italic ms-1"
+              className="text-light fs-5 fst-italic ms-1"
               style={{
                 marginTop: "-0.5rem",
                 fontFamily: "'Oswald', 'Segoe UI', Arial, sans-serif",

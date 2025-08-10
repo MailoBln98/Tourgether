@@ -67,7 +67,6 @@ const Auth: React.FC = () => {
             const errorData = await response.json();
             setMessage(errorData.message || errorData.error || "Login fehlgeschlagen.");
           } catch (jsonError) {
-            const errorText = await response.text();
             if (response.status === 401) {
               setMessage("Ungültige Anmeldedaten.");
             } else if (response.status === 400) {

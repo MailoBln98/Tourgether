@@ -38,6 +38,23 @@
   animation: moto-ride 1.2s cubic-bezier(.4,2,.6,1) infinite;
 }
 
+.logo-spin {
+  transition: transform 0.3s ease-in-out;
+}
+
+.logo-spin:hover {
+  transform: rotate(360deg);
+}
+
+.logo-spin-continuous:hover {
+  animation: logo-spin 1s linear infinite;
+}
+
+@keyframes logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @keyframes moto-ride {
   0%   { transform: translateX(0) rotate(-5deg) scale(1); }
   10%  { transform: translateX(2px) rotate(0deg) scale(1.05);}

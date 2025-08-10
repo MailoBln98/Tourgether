@@ -32,6 +32,3 @@ def send_verification_email(to_email: str, verification_token: str) -> None:
 
     response = mailer.emails.send(email)
 
-if __name__ == "__main__":
-    # Test the email sending function
-    send_verification_email("haelbito@outlook.com", "sample_verification_token")

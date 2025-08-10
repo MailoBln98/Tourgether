@@ -1,6 +1,10 @@
-# Tourgether
-
-A motorcycle route sharing application that allows users to upload, share, and join GPX routes.
+<div align="center">
+  <img src="frontend/tourgether/public/Tourgether_logo.png" alt="Tourgether Logo" width="200" height="auto">
+  
+  # Tourgether
+  
+  <p><em>A motorcycle route sharing application that allows users to upload, share, and join GPX routes.</em></p>
+</div>
 
 ## Getting Started
 

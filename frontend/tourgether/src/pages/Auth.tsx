@@ -34,7 +34,7 @@ const Auth: React.FC = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     setIsLoggedIn(false);
-    setMessage("Erfolgreich ausgeloggt.");
+    setMessage("Successfully logged out.");
     navigate("/login");
   };
 
@@ -118,7 +118,7 @@ const Auth: React.FC = () => {
         <div className="row justify-content-center">
           <div className="col-md-6 col-lg-4">
             <div className="card p-4">
-              <h2 className="mb-3">Du bist bereits eingeloggt</h2>
+              <h2 className="mb-3">You are logged in</h2>
               {message && (
                 <div
                   className={`alert mb-3 ${message.includes("erfolgreich") ? "alert-success" :
@@ -134,7 +134,7 @@ const Auth: React.FC = () => {
                 onClick={handleLogout}
                 className="btn btn-danger w-100"
               >
-                Ausloggen
+                Log out
               </button>
             </div>
           </div>
@@ -148,7 +148,7 @@ const Auth: React.FC = () => {
       <div className="row justify-content-center">
         <div className="col-md-6 col-lg-4">
           <div className="card p-4">
-            <h2 className="mb-3">{isLogin ? "Login" : "Registrieren"}</h2>
+            <h2 className="mb-3">{isLogin ? "Login" : "Register"}</h2>
 
             {message && (
               <div
@@ -191,7 +191,7 @@ const Auth: React.FC = () => {
                 <input
                   type="password"
                   className="form-control"
-                  placeholder="Passwort"
+                  placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -205,11 +205,11 @@ const Auth: React.FC = () => {
               >
                 {loading
                   ? isLogin
-                    ? "Anmelden..."
-                    : "Registrieren..."
+                    ? "Logging in..."
+                    : "Registering..."
                   : isLogin
-                    ? "Anmelden"
-                    : "Registrieren"}
+                  ? "Log in"
+                  : "Register"}
               </button>
             </form>
 
@@ -218,7 +218,7 @@ const Auth: React.FC = () => {
               className="btn btn-link mt-3 w-100"
               type="button"
             >
-              {isLogin ? "Neuen Account erstellen" : "Zur Anmeldung"}
+              {isLogin ? "Create a new account" : "Go to login"}
             </button>
           </div>
         </div>

@@ -1,10 +1,52 @@
+/* Grundlegende Styles */
 #root {
-  max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Poppins', sans-serif;
+  background-color: #f9f9f9;
+  color: #222;
 }
 
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Hauptbereich */
+main {
+  flex: 1 0 auto;
+  padding: 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+/* Header und Footer */
+header, footer {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  background-color: #333;
+  color: white;
+  padding: 1rem 2rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+footer {
+  margin-top: auto;
+  font-size: 0.9rem;
+  text-align: center;
+  justify-content: center;
+  display: flex;
+}
+
+/* Logo Styles */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -33,10 +75,125 @@
   }
 }
 
-.card {
-  padding: 2em;
+/* Buttons */
+button, .btn {
+  cursor: pointer;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Header Navigation Buttons helleres Grau */
+header nav button {
+  background: #777;
+  border: none;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-left: 1rem;
+  border-radius: 0.25rem;
+}
+
+header nav button:hover {
+  background-color: #555;
+}
+
+.btn-black {
+  background-color: black;
+  color: white;
+  border: 1px solid black;
+  margin: 20px 0 20px 0;
+  text-align: center;
+  display: inline-block;
+}
+
+.btn-black:hover {
+  background-color: #333;
+  color: #eee;
+  border-color: #333;
+}
+
+.btn-secondary {
+  background-color: grey;
+  color: white;
+  border: 1px solid grey;
+  margin: 20px 0 20px 20px;
+  text-align: center;
+  display: inline-block;
+}
+
+.btn-secondary:hover {
+  background-color: #333;
+  color: #eee;
+  border-color: #333;
+}
+
+/* Karten- / Card Styles */
+.card {
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 2rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+/* Text */
 .read-the-docs {
   color: #888;
+}
+
+.location-text {
+  font-size: 1.2rem;
+  text-align: left;
+  margin-bottom: 1rem;
+}
+
+/* Responsive Flex Container für Header */
+header > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+header > div > div:first-child {
+  cursor: pointer;
+}
+
+/* Überschriften */
+h1, h2, h3, h4 {
+  margin: 0;
+}
+
+/* Formularfelder (Upload, Auth, ...) */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #646cff;
+  box-shadow: 0 0 5px #646cff88;
+}
+
+/* Link Style */
+a {
+  color: #646cff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }

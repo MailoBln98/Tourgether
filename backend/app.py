@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request, Response
 from flask_pymongo import PyMongo
 from flask_bcrypt import Bcrypt
+from datetime import datetime
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, JWTManager
-from DataBase import UserRepository, GpxRepository
+from flask_cors import CORS
+from DataBase import db, UserRepository, GpxRepository
 
 from typing import Any, Dict, List, Optional
 from pymongo.results import InsertOneResult, UpdateResult
@@ -19,10 +21,13 @@ mongo: PyMongo = PyMongo(app)
 bcrypt: Bcrypt = Bcrypt(app)
 jwt: JWTManager = JWTManager(app)
 
+# --- CORS ---
+CORS(app)  # Erlaubt CORS für alle Domains und alle Routen (kann noch eingeschränkt werden)
+
 # --- Repository Instances ---
 # We instantiate our repositories, passing them the necessary dependencies (db connection, bcrypt)
-user_repo: UserRepository = UserRepository(db=mongo.db, bcrypt=bcrypt)
-gpx_repo: GpxRepository = GpxRepository(db=mongo.db)
+user_repo = UserRepository(db, bcrypt)
+gpx_repo = GpxRepository(db)
 
 
 # --- Authentication Routes ---
@@ -64,23 +69,77 @@ def login() -> Response:
 
     return jsonify({'message': 'Invalid credentials'}), 401
 
+@app.route('/api/users/batch', methods=['POST'])
+def get_users_batch() -> Response:
+    """Get multiple users by their UUIDs."""
+    try:
+        data = request.get_json()
+        user_ids = data.get('user_ids', [])
+        
+        if not user_ids or not isinstance(user_ids, list):
+            return jsonify({'message': 'user_ids array required'}), 400
+        
+        users = user_repo.find_multiple_by_uuids(user_ids)
+        
+        # Convert to dict for easier frontend access
+        user_dict = {user['_id']: user['name'] for user in users}
+        
+        return jsonify(user_dict), 200
+        
+    except Exception as e:
+        return jsonify({'message': 'Server error'}), 500
+
 
 # --- API Routes ---
 
 @app.route('/api/upload_gpx', methods=['POST'])
 @jwt_required()
 def upload_gpx() -> Response:
-    """Upload a GPX route.
+    """Upload a GPX route with a start time and start point.
 
-    Expects raw GPX data in the request body.
-    Returns 201 on success, 400 if no data is provided.
+    Expects a multipart/form-data request with the following fields:
+    - 'gpx_file': The GPX file itself.
+    - 'route_name': The name of the route.
+    - 'start_time': The start date and time in ISO 8601 format (e.g., "2023-10-27T10:00:00Z").
+    - 'start_point': A string describing the starting location as coordinates (e.g., "52.45693768689539, 13.526196936079945").
+
+    Returns 201 on success, 400 if data is missing or invalid.
     """
     current_user_uuid: Any = get_jwt_identity()
-    gpx_data: str = request.get_data(as_text=True)
-    if not gpx_data:
-        return jsonify({'message': 'No GPX data provided'}), 400
 
-    result: InsertOneResult = gpx_repo.save_gpx(gpx_data, current_user_uuid)
+    gpx_file = request.files.get('gpx_file')
+    route_name = request.form.get('name') 
+    start_time_str = request.form.get('start_time')
+    start_point = request.form.get('start_point')
+
+    if not gpx_file:
+        return jsonify({'message': "Missing 'gpx_file' in the request"}), 400
+    if not route_name:
+        return jsonify({'message': "Missing 'name' field in the request"}), 400
+    if not start_time_str:
+        return jsonify({'message': "Missing 'start_time' field in the request"}), 400
+    if not start_point:
+        return jsonify({'message': "Missing 'start_point' field in the request"}), 400
+
+    gpx_data: str = gpx_file.read().decode('utf-8')
+    
+    try:
+        start_time_dt = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+    except ValueError:
+        return jsonify({'message': 'Invalid start_time format. Use ISO 8601 format (e.g., 2023-10-27T10:00:00Z).'}), 400
+    
+    owner = user_repo.find_by_uuid(current_user_uuid)
+    owner_name = owner['name'] if owner else 'Unknown'
+
+    result: InsertOneResult = gpx_repo.save_gpx(
+        gpx_data=gpx_data,
+        owner_uuid=current_user_uuid,
+        owner_name=owner_name,
+        name=route_name,
+        start_time=start_time_dt,
+        start_point=start_point
+    )
+    
     return jsonify({'message': 'GPX route uploaded', 'inserted_id': str(result.inserted_id)}), 201
 
 

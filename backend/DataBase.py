@@ -1,12 +1,33 @@
 # database.py
 
 import uuid
+import os
+from datetime import datetime
 from bson.objectid import ObjectId
 from bson.objectid import ObjectId
 from flask_bcrypt import Bcrypt
+from pymongo import MongoClient
 from pymongo.database import Database, Collection
 from pymongo.results import InsertOneResult, UpdateResult
 from typing import Any, Dict, List, Optional
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# HTW MongoDB credentials
+db_user = os.getenv('DB_USER')
+db_pass = os.getenv('DB_PASS')
+db_name = os.getenv('DB_NAME')
+dbHostname = os.getenv('DB_HOSTNAME')
+dbPort = int(os.getenv('DB_PORT', 27017))
+
+# Connection URI for HTW MongoDB
+uri = f"mongodb://{db_user}:{db_pass}@{dbHostname}:{dbPort}/{db_name}?authSource={db_name}"
+
+# Create MongoDB client
+client = MongoClient(uri)
+db = client[db_name]
 
 MongoDoc = Dict[str, Any]
 
@@ -40,6 +61,13 @@ class UserRepository:
     def find_by_uuid(self, user_uuid) -> Optional[MongoDoc]:
         """Finds a user by their unique ID (_id)."""
         return self.users.find_one({'_id': user_uuid})
+    
+    def find_multiple_by_uuids(self, user_uuids: List[str]) -> List[MongoDoc]:
+        """Finds multiple users by their UUIDs and returns only name and _id."""
+        return list(self.users.find(
+            {'_id': {'$in': user_uuids}},
+            {'name': 1, '_id': 1}
+        ))
 
 
 class GpxRepository:
@@ -52,11 +80,15 @@ class GpxRepository:
         """
         self.routes: Collection = db.routes
 
-    def save_gpx(self, gpx_data, owner_uuid) -> InsertOneResult:
-        """Saves GPX data, associating it with an owner."""
+    def save_gpx(self, gpx_data: str, owner_uuid: str, owner_name: str, name: str, start_time: datetime, start_point: str) -> InsertOneResult:
+        """Saves GPX data with start time and point, associating it with an owner."""
         return self.routes.insert_one({
             'gpx': gpx_data,
+            'name': name,
             'owner_uuid': owner_uuid,
+            'owner_name': owner_name,
+            'start_time': start_time,
+            'start_point': start_point,
             'registered_users': []
         })
 

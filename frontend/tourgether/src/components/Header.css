@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600&display=swap');
+
+.header-btn-animate {
+  transition: 
+    background 0.18s, 
+    color 0.18s, 
+    box-shadow 0.18s, 
+    transform 0.18s;
+}
+
+.header-btn-animate:hover, .header-btn-animate:focus {
+  box-shadow: 0 0.5rem 1rem rgba(44,62,80,0.10);
+  transform: scale(1.08);
+  opacity: 0.9;
+}
+
+/* Animate the "+" icon inside the Upload button on hover */
+.header-btn-animate .fa-plus {
+  transition: none;
+}
+
+.header-btn-animate:hover .fa-plus,
+.header-btn-animate:focus .fa-plus {
+  animation: plus-bounce 0.7s infinite;
+}
+
+@keyframes plus-bounce {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.8); }
+  50%  { transform: scale(1.2); }
+  75%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+/* Motorcycle icon animation */
+.header-moto-animate {
+  display: inline-block;
+  animation: moto-ride 1.2s cubic-bezier(.4,2,.6,1) infinite;
+}
+
+.logo-spin {
+  transition: transform 0.3s ease-in-out;
+}
+
+.logo-spin:hover {
+  transform: rotate(360deg);
+}
+
+.logo-spin-continuous:hover {
+  animation: logo-spin 1s linear infinite;
+}
+
+@keyframes logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes moto-ride {
+  0%   { transform: translateX(0) rotate(-5deg) scale(1); }
+  10%  { transform: translateX(2px) rotate(0deg) scale(1.05);}
+  20%  { transform: translateX(4px) rotate(2deg) scale(1.08);}
+  30%  { transform: translateX(6px) rotate(-2deg) scale(1.1);}
+  40%  { transform: translateX(8px) rotate(0deg) scale(1.12);}
+  50%  { transform: translateX(10px) rotate(2deg) scale(1.15);}
+  60%  { transform: translateX(8px) rotate(-2deg) scale(1.12);}
+  70%  { transform: translateX(6px) rotate(0deg) scale(1.1);}
+  80%  { transform: translateX(4px) rotate(2deg) scale(1.08);}
+  90%  { transform: translateX(2px) rotate(-2deg) scale(1.05);}
+  100% { transform: translateX(0) rotate(-5deg) scale(1);}
+}

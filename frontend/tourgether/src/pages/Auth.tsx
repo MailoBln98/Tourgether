@@ -23,9 +23,9 @@ const Auth: React.FC = () => {
       sessionStorage.removeItem('loginMessage');
     }
 
-    const token = searchParams.get('token');
-    if (token) {
-      verifyEmail(token);
+    const verified = searchParams.get('verified');
+    if (verified === 'true') {
+      setMessage('Email successfully verified! You can now log in.');
     }
   }, [searchParams]);
 

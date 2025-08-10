@@ -160,7 +160,10 @@ const Home: React.FC = () => {
                 >
                   <div className="card-body">
                     <GPXThumbnail gpx={route.gpx} height={120} zoomable={false} />
-                    <h5 className="card-title">{route.name}</h5>
+                    <h5 className="card-title route-detail-heading" style={{ fontFamily: "'Oswald', 'Segoe UI', Arial, sans-serif" }}>
+                      {route.name}
+                    </h5>
+                    <hr className="my-3" />
                     <div className="mb-2">
                       <strong className="oswald-info">📍 Start Location:</strong>
                       <br />

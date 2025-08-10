@@ -222,7 +222,10 @@ const RouteDetailScreen: React.FC = () => {
           <div className="col-lg-8">
             <div className="card shadow-sm">
               <div className="card-body">
-                <h2 className="card-title mb-3 route-detail-heading">{route.name}</h2>
+                <h2 className="card-title mb-3 route-detail-heading" style={{ fontFamily: "'Oswald', 'Segoe UI', Arial, sans-serif" }}>
+                  {route.name}
+                </h2>
+                <hr className="mb-4" />
                 <div className="mb-4 text-center">
                   <GPXThumbnail gpx={route.gpx} height={320} zoomable />
                 </div>

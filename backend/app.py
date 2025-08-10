@@ -49,6 +49,17 @@ def register() -> Response:
     user_repo.create_user(data['name'], data['email'], data['password'])
     return jsonify({'message': 'User created successfully'}), 201
 
+@app.route('/api/auth/verify/<token>', methods=['POST'])
+def verify_user(token: str) -> Response:
+    """Verify a user's email address using a token."""
+    
+    user: Dict[str, Any] = user_repo.find_by_verification_token(token)
+
+    if user:
+        user_repo.verify_user(user['_id'], token)
+        return jsonify({'message': 'Email verified successfully'}), 200
+
+    return jsonify({'message': 'Invalid or expired token'}), 400
 
 @app.route('/api/auth/login', methods=['POST'])
 def login() -> Response:
@@ -63,9 +74,13 @@ def login() -> Response:
 
     user: Dict[str, Any] = user_repo.find_by_email(data['email'])
 
+    if user:
+        if user.get('is_verified') is False:
+            return jsonify({'message': 'Email not verified'}), 401
+
     if user and bcrypt.check_password_hash(user['password'], data['password']):
         access_token: str = create_access_token(identity=user['_id'])
-        return jsonify({'access_token': access_token})
+        return jsonify({'access_token': access_token}), 200
 
     return jsonify({'message': 'Invalid credentials'}), 401
 

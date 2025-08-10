@@ -6,6 +6,8 @@ import Home from '../pages/Home';
 import Upload from '../pages/Upload';
 import Auth from '../pages/Auth';
 import RouteDetailScreen from '../pages/RouteDetailScreen';
+import { AboutScreen } from '../pages/Aboutscreen';
+import { LegalScreen } from '../pages/Legalscreen';
 
 const AppRouter: React.FC = () => {
   return (
@@ -15,8 +17,10 @@ const AppRouter: React.FC = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/upload" element={<Upload />} />
-          <Route path="/login" element={<Auth />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/route/:routeId" element={<RouteDetailScreen />} />
+          <Route path="/about" element={<AboutScreen />} />
+          <Route path="/legal" element={<LegalScreen />} />
         </Routes>
       </main>
       <Footer />

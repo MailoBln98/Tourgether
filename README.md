@@ -42,6 +42,7 @@ The frontend will be available at `http://localhost:5173` (or the port shown in 
 - View detailed route information with interactive maps (interactive maps coming in Updated 2.0!)
 - Comment on routes
 - User authentication and registration
+  - ([Email verification](https://github.com/MailoBln98/Tourgether/blob/verify_email/backend/mail.md))
 
 ## Technology Stack
 

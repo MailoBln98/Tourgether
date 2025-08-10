@@ -3,6 +3,9 @@ import type { Route } from '../types/Route';
 import { useNavigate } from 'react-router-dom';
 import GPXThumbnail from '../components/GPXThumbnail';
 
+// Add this for custom hover styles
+import './Home.css';
+
 function getCurrentUserId() {
   const token = sessionStorage.getItem('token');
   if (!token) return null;
@@ -18,9 +21,10 @@ const Home: React.FC = () => {
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  const [buttonAnimating, setButtonAnimating] = useState<{ [routeId: string]: boolean }>({});
+  const [buttonState, setButtonState] = useState<{ [routeId: string]: 'join' | 'leave' }>({});
   const currentUserId = getCurrentUserId();
   const navigate = useNavigate();
-
 
   useEffect(() => {
     fetchRoutes();
@@ -32,6 +36,12 @@ const Home: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setRoutes(data);
+        // Set initial button state for each route
+        const state: { [routeId: string]: 'join' | 'leave' } = {};
+        data.forEach((route: Route) => {
+          state[route._id] = route.registered_users.includes(currentUserId) ? 'leave' : 'join';
+        });
+        setButtonState(state);
       } else {
         setError('Failed to fetch routes');
       }
@@ -43,6 +53,7 @@ const Home: React.FC = () => {
   };
 
   const joinRoute = async (routeId: string) => {
+    setButtonAnimating((prev) => ({ ...prev, [routeId]: true }));
     try {
       const token = sessionStorage.getItem('token');
       const headers: HeadersInit = {};
@@ -54,16 +65,23 @@ const Home: React.FC = () => {
       });
 
       if (response.ok) {
-        fetchRoutes();
+        setTimeout(() => {
+          setButtonState((prev) => ({ ...prev, [routeId]: 'leave' }));
+          fetchRoutes();
+          setButtonAnimating((prev) => ({ ...prev, [routeId]: false }));
+        }, 350);
       } else {
+        setButtonAnimating((prev) => ({ ...prev, [routeId]: false }));
         setError('Failed to join route');
       }
     } catch (err) {
+      setButtonAnimating((prev) => ({ ...prev, [routeId]: false }));
       setError('Network error occurred');
     }
   };
 
   const leaveRoute = async (routeId: string) => {
+    setButtonAnimating((prev) => ({ ...prev, [routeId]: true }));
     try {
       const token = sessionStorage.getItem('token');
       const headers: HeadersInit = {};
@@ -75,11 +93,17 @@ const Home: React.FC = () => {
       });
 
       if (response.ok || response.status === 204) {
-        fetchRoutes();
+        setTimeout(() => {
+          setButtonState((prev) => ({ ...prev, [routeId]: 'join' }));
+          fetchRoutes();
+          setButtonAnimating((prev) => ({ ...prev, [routeId]: false }));
+        }, 350);
       } else {
+        setButtonAnimating((prev) => ({ ...prev, [routeId]: false }));
         setError('Failed to leave route');
       }
     } catch (err) {
+      setButtonAnimating((prev) => ({ ...prev, [routeId]: false }));
       setError('Network error occurred');
     }
   };
@@ -115,7 +139,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="container mt-4">
-      <h1 className="mb-4">Motorcycle Routes</h1>
+      <h1 className="mb-4">FIND YOUR RIDE</h1>
       {routes.length === 0 ? (
         <div className="alert alert-info">No routes available yet.</div>
       ) : (
@@ -123,15 +147,19 @@ const Home: React.FC = () => {
           {routes.map((route) => {
             const isOwner = route.owner_uuid === currentUserId;
             const isRegistered = route.registered_users.includes(currentUserId);
+            const animating = buttonAnimating[route._id];
             return (
               <div key={route._id} className="col-md-6 col-lg-4 mb-4">
                 <div
-                  className="card h-100"
-                  style={{ cursor: 'pointer' }}
+                  className="card h-100 shadow-sm route-card-hover"
+                  style={{ border: "2px solid #dee2e6" }}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => navigate(`/route/${route._id}`)}
+                  onKeyPress={e => { if (e.key === 'Enter') navigate(`/route/${route._id}`); }}
                 >
                   <div className="card-body">
-                    <GPXThumbnail gpx={route.gpx} />
+                    <GPXThumbnail gpx={route.gpx} height={120} zoomable={false} />
                     <h5 className="card-title">{route.name}</h5>
                     <div className="mb-2">
                       <strong>📍 Start Location:</strong>
@@ -156,26 +184,34 @@ const Home: React.FC = () => {
                   </div>
                   <div className="card-footer d-flex flex-column gap-2" onClick={e => e.stopPropagation()}>
                     {isOwner ? (
-                      <div className="text-center text-muted" style={{fontSize: '0.9rem', padding: '0.5rem 0'}}>You created this tour</div>
+                      <div className="text-center text-muted small py-2">You created this tour</div>
                     ) : (
-                      <>
-                        {!isRegistered && (
-                          <button 
-                            className="btn btn-primary w-100"
-                            onClick={(e) => { e.stopPropagation(); joinRoute(route._id); }}
-                          >
-                            Join Route
-                          </button>
-                        )}
-                        {isRegistered && (
-                          <button
-                            className="btn btn-warning w-100"
-                            onClick={(e) => { e.stopPropagation(); leaveRoute(route._id); }}
-                          >
-                            Leave Route
-                          </button>
-                        )}
-                      </>
+                      <div className="ride-btn-transition-wrapper">
+                        <div className={`ride-btn-transition-inner ${animating ? 'animating' : ''}`}>
+                          {!animating && buttonState[route._id] === 'join' && (
+                            <button
+                              className="w-100 d-flex align-items-center justify-content-center gap-2 py-2 px-3 rounded btn-ride-hover"
+                              style={{ backgroundColor: "#14532d", color: "#fff", border: "none" }}
+                              onClick={(e) => { e.stopPropagation(); joinRoute(route._id); }}
+                              disabled={animating}
+                            >
+                              <i className="fas fa-hand-paper" aria-hidden="true"></i>
+                              Join Ride
+                            </button>
+                          )}
+                          {!animating && buttonState[route._id] === 'leave' && (
+                            <button
+                              className="w-100 d-flex align-items-center justify-content-center gap-2 py-2 px-3 rounded btn-ride-hover"
+                              style={{ backgroundColor: "#8b1f1f", color: "#fff", border: "none" }}
+                              onClick={(e) => { e.stopPropagation(); leaveRoute(route._id); }}
+                              disabled={animating}
+                            >
+                              <i className="fas fa-minus" aria-hidden="true"></i>
+                              Leave Ride
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>

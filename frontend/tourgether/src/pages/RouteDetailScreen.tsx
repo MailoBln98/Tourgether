@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import GPXThumbnail from '../components/GPXThumbnail';
 import type { Route } from '../types/Route';
+import './Home.css'; // Reuse the button animation styles from Home
 
 const RouteDetailScreen: React.FC = () => {
     const { routeId } = useParams();
@@ -11,7 +12,24 @@ const RouteDetailScreen: React.FC = () => {
     const [comments, setComments] = useState<string[]>([]);
     const [newComment, setNewComment] = useState('');
     const [userNames, setUserNames] = useState<{ [key: string]: string }>({});
+    const [isRegistered, setIsRegistered] = useState(false);
+    const [isOwner, setIsOwner] = useState(false);
+    const [buttonAnimating, setButtonAnimating] = useState(false);
+    const [buttonState, setButtonState] = useState<'join' | 'leave'>('join');
+    const navigate = useNavigate();
 
+    // Helper to get current user ID
+    function getCurrentUserId() {
+      const token = sessionStorage.getItem('token');
+      if (!token) return null;
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.sub || payload.user_id || payload._id;
+      } catch {
+        return null;
+      }
+    }
+    const currentUserId = getCurrentUserId();
 
     useEffect(() => {
         const fetchRoute = async () => {
@@ -23,6 +41,9 @@ const RouteDetailScreen: React.FC = () => {
                     if (found) {
                         setRoute(found);
                         fetchUserNames(found.registered_users);
+                        setIsOwner(found.owner_uuid === currentUserId);
+                        setIsRegistered(found.registered_users.includes(currentUserId));
+                        setButtonState(found.registered_users.includes(currentUserId) ? 'leave' : 'join');
                     } else {
                         setError('Route not found');
                     }
@@ -36,6 +57,7 @@ const RouteDetailScreen: React.FC = () => {
             }
         };
         fetchRoute();
+        // eslint-disable-next-line
     }, [routeId]);
 
     const fetchUserNames = async (userIds: string[]) => {
@@ -54,13 +76,11 @@ const RouteDetailScreen: React.FC = () => {
                 const userDict = await response.json();
                 setUserNames(userDict);
             } else {
-                // Fallback: use user IDs as names
                 const fallback: { [key: string]: string } = {};
                 userIds.forEach(id => fallback[id] = id);
                 setUserNames(fallback);
             }
         } catch {
-            // Fallback: use user IDs as names
             const fallback: { [key: string]: string } = {};
             userIds.forEach(id => fallback[id] = id);
             setUserNames(fallback);
@@ -72,7 +92,7 @@ const RouteDetailScreen: React.FC = () => {
             return '0 riders';
         }
 
-        const maxLength = 50; // Maximum characters for names
+        const maxLength = 50;
         const names = route.registered_users.map(userId => userNames[userId] || userId);
         const totalCount = names.length;
 
@@ -130,53 +150,154 @@ const RouteDetailScreen: React.FC = () => {
         setNewComment('');
     };
 
-    if (loading) return <div className="text-center mt-5"><h3>Loading route...</h3></div>;
+    const joinRoute = async (routeId: string) => {
+      setButtonAnimating(true);
+      try {
+        const token = sessionStorage.getItem('token');
+        const headers: HeadersInit = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`/api/routes/${routeId}/ride`, {
+          method: 'POST',
+          headers,
+        });
+
+        if (response.ok) {
+          setTimeout(() => {
+            setIsRegistered(true);
+            setButtonState('leave');
+            setButtonAnimating(false);
+          }, 350);
+        } else {
+          setButtonAnimating(false);
+          setError('Failed to join route');
+        }
+      } catch (err) {
+        setButtonAnimating(false);
+        setError('Network error occurred');
+      }
+    };
+
+    const leaveRoute = async (routeId: string) => {
+      setButtonAnimating(true);
+      try {
+        const token = sessionStorage.getItem('token');
+        const headers: HeadersInit = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(`/api/routes/${routeId}/ride`, {
+          method: 'DELETE',
+          headers,
+        });
+
+        if (response.ok || response.status === 204) {
+          setTimeout(() => {
+            setIsRegistered(false);
+            setButtonState('join');
+            setButtonAnimating(false);
+          }, 350);
+        } else {
+          setButtonAnimating(false);
+          setError('Failed to leave route');
+        }
+      } catch (err) {
+        setButtonAnimating(false);
+        setError('Network error occurred');
+      }
+    };
+
+    if (loading)
+      return (
+        <div className="d-flex justify-content-center align-items-center" style={{ minHeight: '40vh' }}>
+          <div className="spinner-border text-primary me-2" role="status" />
+          <span>Loading route...</span>
+        </div>
+      );
     if (error) return <div className="alert alert-danger mt-3">{error}</div>;
     if (!route) return null;
 
     return (
-        <div className="container mt-4">
-            <h2>{route.name}</h2>
-            <div className="mb-4">
-                <GPXThumbnail gpx={route.gpx} height={320} />
-            </div>
-            <div className="mb-2">
-                <strong>📍 Start Location:</strong> {route.start_point}
-            </div>
-            <div className="mb-2">
-                <strong>🕒 Start Time:</strong> {formatDate(route.start_time)}
-            </div>
-            <div className="mb-2">
-                <strong>👤 Creator:</strong> {route.owner_name || route.owner_uuid}
-            </div>
-            <div className="mb-2">
-                <strong>🏍️ Registered Riders:</strong> {formatRiders()}
-            </div>
-
-            <hr className="my-4" />
-
-            <h4>Comments</h4>
-            <form onSubmit={handleCommentSubmit} className="mb-3">
-                <div className="input-group">
+      <div className="container mt-4 mb-5">
+        <div className="row justify-content-center">
+          <div className="col-lg-8">
+            <div className="card shadow-sm">
+              <div className="card-body">
+                <h2 className="card-title mb-3">{route.name}</h2>
+                <div className="mb-4 text-center">
+                  <GPXThumbnail gpx={route.gpx} height={320} zoomable />
+                </div>
+                <ul className="list-group list-group-flush mb-3">
+                  <li className="list-group-item">
+                    <strong>📍 Start Location:</strong> {route.start_point}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>🕒 Start Time:</strong> {formatDate(route.start_time)}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>👤 Creator:</strong> {route.owner_name || route.owner_uuid}
+                  </li>
+                  <li className="list-group-item">
+                    <strong>🏍️ Registered Riders:</strong> {formatRiders()}
+                  </li>
+                </ul>
+                {/* Join/Leave Buttons with animation */}
+                <div className="d-flex flex-column gap-2 mb-4 ride-btn-transition-wrapper">
+                  {isOwner ? (
+                    <div className="text-center text-muted small py-2">You created this tour</div>
+                  ) : (
+                    <div className={`ride-btn-transition-inner${buttonAnimating ? ' animating' : ''}`}>
+                      {!buttonAnimating && buttonState === 'join' && (
+                        <button
+                          className="w-100 d-flex align-items-center justify-content-center gap-2 py-2 px-3 rounded btn-ride-hover"
+                          style={{ backgroundColor: "#14532d", color: "#fff", border: "none" }}
+                          onClick={() => joinRoute(route._id)}
+                          disabled={buttonAnimating}
+                        >
+                          <i className="fas fa-hand-paper" aria-hidden="true"></i>
+                          Join Ride
+                        </button>
+                      )}
+                      {!buttonAnimating && buttonState === 'leave' && (
+                        <button
+                          className="w-100 d-flex align-items-center justify-content-center gap-2 py-2 px-3 rounded btn-ride-hover"
+                          style={{ backgroundColor: "#8b1f1f", color: "#fff", border: "none" }}
+                          onClick={() => leaveRoute(route._id)}
+                          disabled={buttonAnimating}
+                        >
+                          <i className="fas fa-minus" aria-hidden="true"></i>
+                          Leave Ride
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <hr className="my-4" />
+                <h4 className="mb-3">Comments</h4>
+                <form onSubmit={handleCommentSubmit} className="mb-3">
+                  <div className="input-group">
                     <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Write a comment..."
-                        value={newComment}
-                        onChange={e => setNewComment(e.target.value)}
+                      type="text"
+                      className="form-control"
+                      placeholder="Write a comment..."
+                      value={newComment}
+                      onChange={e => setNewComment(e.target.value)}
                     />
                     <button className="btn btn-primary" type="submit">Post</button>
-                </div>
-            </form>
-            <ul className="list-group">
-                {comments.length === 0 && (
+                  </div>
+                </form>
+                <ul className="list-group">
+                  {comments.length === 0 && (
                     <li className="list-group-item text-muted">No comments yet.</li>
-                )}
-                {comments.map((comment, idx) => (
+                  )}
+                  {comments.map((comment, idx) => (
                     <li key={idx} className="list-group-item">{comment}</li>
-                ))}
-            </ul>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     );
 };
 

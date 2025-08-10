@@ -27,7 +27,7 @@ const Auth: React.FC = () => {
     sessionStorage.removeItem("token");
     setIsLoggedIn(false);
     setMessage("Erfolgreich ausgeloggt.");
-    navigate("/login"); // Oder zu einer anderen Route, z.B. "/"
+    navigate("/login");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,95 +87,108 @@ const Auth: React.FC = () => {
 
   if (isLoggedIn) {
     return (
-      <div style={{ padding: "2rem" }}>
-        <h2>Du bist bereits eingeloggt</h2>
-        {message && (
-          <div style={{ marginBottom: "1rem", color: "green" }}>{message}</div>
-        )}
-        <button
-          onClick={handleLogout}
-          style={{ padding: "0.5rem", cursor: "pointer" }}
-        >
-          Ausloggen
-        </button>
+      <div className="container mt-5">
+        <div className="row justify-content-center">
+          <div className="col-md-6 col-lg-4">
+            <div className="card p-4">
+              <h2 className="mb-3">Du bist bereits eingeloggt</h2>
+              {message && (
+                <div className="alert alert-success mb-3" role="alert">
+                  {message}
+                </div>
+              )}
+              <button
+                onClick={handleLogout}
+                className="btn btn-danger w-100"
+              >
+                Ausloggen
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
-  // Wenn nicht eingeloggt: Login/Register Formular wie gehabt
   return (
-    <div style={{ padding: "2rem" }}>
-      <h2>{isLogin ? "Login" : "Registrieren"}</h2>
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-6 col-lg-4">
+          <div className="card p-4">
+            <h2 className="mb-3">{isLogin ? "Login" : "Registrieren"}</h2>
 
-      {message && (
-        <div
-          style={{
-            marginBottom: "1rem",
-            color: message.includes("erfolgreich") ? "green" : "red",
-          }}
-        >
-          {message}
+            {message && (
+              <div
+                className={`alert mb-3 ${
+                  message.includes("erfolgreich") ? "alert-success" : "alert-danger"
+                }`}
+                role="alert"
+              >
+                {message}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              {!isLogin && (
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              <div className="mb-3">
+                <input
+                  type="email"
+                  className="form-control"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Passwort"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary w-100"
+                disabled={loading}
+              >
+                {loading
+                  ? isLogin
+                    ? "Anmelden..."
+                    : "Registrieren..."
+                  : isLogin
+                  ? "Anmelden"
+                  : "Registrieren"}
+              </button>
+            </form>
+
+            <button
+              onClick={toggleForm}
+              className="btn btn-link mt-3 w-100"
+              type="button"
+            >
+              {isLogin ? "Neuen Account erstellen" : "Zur Anmeldung"}
+            </button>
+          </div>
         </div>
-      )}
-
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column", maxWidth: "300px" }}
-      >
-        {!isLogin && (
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ marginBottom: "1rem", padding: "0.5rem" }}
-            required
-          />
-        )}
-
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={{ marginBottom: "1rem", padding: "0.5rem" }}
-          required
-        />
-
-        <input
-          type="password"
-          placeholder="Passwort"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={{ marginBottom: "1rem", padding: "0.5rem" }}
-          required
-        />
-
-        <button type="submit" style={{ padding: "0.5rem" }} disabled={loading}>
-          {loading
-            ? isLogin
-              ? "Anmelden..."
-              : "Registrieren..."
-            : isLogin
-            ? "Anmelden"
-            : "Registrieren"}
-        </button>
-      </form>
-
-      <button
-        onClick={toggleForm}
-        style={{
-          marginTop: "1rem",
-          padding: "0.5rem",
-          background: "none",
-          border: "none",
-          color: "blue",
-          textDecoration: "underline",
-          cursor: "pointer",
-        }}
-      >
-        {isLogin ? "Neuen Account erstellen" : "Zur Anmeldung"}
-      </button>
+      </div>
     </div>
   );
 };

@@ -1,0 +1,31 @@
+.header-btn-animate {
+  transition: 
+    background 0.18s, 
+    color 0.18s, 
+    box-shadow 0.18s, 
+    transform 0.18s;
+}
+
+.header-btn-animate:hover, .header-btn-animate:focus {
+  box-shadow: 0 0.5rem 1rem rgba(44,62,80,0.10);
+  transform: scale(1.08);
+  opacity: 0.9;
+}
+
+/* Animate the "+" icon inside the Upload button on hover */
+.header-btn-animate .fa-plus {
+  transition: none;
+}
+
+.header-btn-animate:hover .fa-plus,
+.header-btn-animate:focus .fa-plus {
+  animation: plus-bounce 0.7s infinite;
+}
+
+@keyframes plus-bounce {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.8); }
+  50%  { transform: scale(1.2); }
+  75%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}

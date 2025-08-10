@@ -8,6 +8,7 @@ import Auth from '../pages/Auth';
 import RouteDetailScreen from '../pages/RouteDetailScreen';
 import { AboutScreen } from '../pages/Aboutscreen';
 import { LegalScreen } from '../pages/Legalscreen';
+import VerifyRedirect from '../pages/VerifyRedirect';
 
 const AppRouter: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const AppRouter: React.FC = () => {
           <Route path="/route/:routeId" element={<RouteDetailScreen />} />
           <Route path="/about" element={<AboutScreen />} />
           <Route path="/legal" element={<LegalScreen />} />
+          <Route path="/verify/:token" element={<VerifyRedirect />} />
         </Routes>
       </main>
       <Footer />

@@ -1,19 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const API_URL = "http://localhost:5000";
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [isLoggedIn, setIsLoggedIn] = useState(() => !!sessionStorage.getItem("token"));
-
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'success' | 'error' | null>(null);
 
   useEffect(() => {
     const loginMessage = sessionStorage.getItem('loginMessage');
@@ -21,7 +22,33 @@ const Auth: React.FC = () => {
       setMessage(loginMessage);
       sessionStorage.removeItem('loginMessage');
     }
-  }, []);
+
+    const token = searchParams.get('token');
+    if (token) {
+      verifyEmail(token);
+    }
+  }, [searchParams]);
+
+  const verifyEmail = async (token: string) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/verify/${token}`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        setVerificationStatus('success');
+        setMessage('Email successfully verified! You can now log in.');
+        setIsLogin(true);
+      } else {
+        const errorData = await response.json();
+        setVerificationStatus('error');
+        setMessage(errorData.message || 'Email verification failed.');
+      }
+    } catch (error) {
+      setVerificationStatus('error');
+      setMessage('Network error during email verification.');
+    }
+  };
 
   const toggleForm = () => {
     setMessage(null);
@@ -29,13 +56,14 @@ const Auth: React.FC = () => {
     setName("");
     setEmail("");
     setPassword("");
+    setVerificationStatus(null);
   };
 
   const handleLogout = () => {
     sessionStorage.removeItem("token");
     setIsLoggedIn(false);
     setMessage("Successfully logged out.");
-    navigate("/login");
+    navigate("/");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,9 +93,13 @@ const Auth: React.FC = () => {
         } else {
           try {
             const errorData = await response.json();
-            setMessage(errorData.message || errorData.error || "Login fehlgeschlagen.");
+            if (response.status === 403 && errorData.message.includes('not verified')) {
+              setMessage("Please verify your email before logging in.");
+              setVerificationStatus('pending');
+            } else {
+              setMessage(errorData.message || errorData.error || "Login fehlgeschlagen.");
+            }
           } catch (jsonError) {
-            const errorText = await response.text();
             if (response.status === 401) {
               setMessage("Ungültige Anmeldedaten.");
             } else if (response.status === 400) {
@@ -85,10 +117,9 @@ const Auth: React.FC = () => {
         });
 
         if (response.status === 201) {
-          setMessage("Registrierung erfolgreich! Bitte jetzt einloggen.");
-          setIsLogin(true);
+          setMessage("Registration successful! Please check your email to verify your account before logging in.");
+          setVerificationStatus('pending');
           setName("");
-          setEmail("");
           setPassword("");
         } else {
           try {
@@ -122,8 +153,8 @@ const Auth: React.FC = () => {
               {message && (
                 <div
                   className={`alert mb-3 ${message.includes("erfolgreich") ? "alert-success" :
-                      message.includes("Log in") || message.includes("need to be") ? "alert-info" :
-                        "alert-danger"
+                    message.includes("Log in") || message.includes("need to be") ? "alert-info" :
+                      "alert-danger"
                     }`}
                   role="alert"
                 >
@@ -152,8 +183,8 @@ const Auth: React.FC = () => {
 
             {message && (
               <div
-                className={`alert mb-3 ${message.includes("erfolgreich") ? "alert-success" :
-                    message.includes("Log in") || message.includes("need to be") ? "alert-info" :
+                className={`alert mb-3 ${message.includes("erfolgreich") || message.includes("successful") || verificationStatus === 'success' ? "alert-success" :
+                    message.includes("Log in") || message.includes("need to be") || message.includes("check your email") ? "alert-info" :
                       "alert-danger"
                   }`}
                 role="alert"
@@ -208,8 +239,8 @@ const Auth: React.FC = () => {
                     ? "Logging in..."
                     : "Registering..."
                   : isLogin
-                  ? "Log in"
-                  : "Register"}
+                    ? "Log in"
+                    : "Register"}
               </button>
             </form>
 

@@ -3,8 +3,9 @@ from mailersend import MailerSendClient, EmailBuilder
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader
 
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-load_dotenv("backend/.mail.env")
+load_dotenv(os.path.join(script_dir, ".mail.env"))
 
 MAILERSEND_API_KEY = os.getenv("MAILERSEND_API_KEY")
 
@@ -13,7 +14,6 @@ if MAILERSEND_API_KEY is None:
 
 def send_verification_email(to_email: str, verification_token: str) -> None:
     """Send a verification email to the user."""
-    script_dir = os.path.dirname(os.path.abspath(__file__))
     template_dir = os.path.join(script_dir, 'templates')
     env = Environment(loader=FileSystemLoader(template_dir))
     template = env.get_template('verification_email.html')

@@ -47,12 +47,27 @@ class UserRepository:
         """Hashes password and saves a new user to the database."""
         hashed_password = self.bcrypt.generate_password_hash(password).decode('utf-8')
         user_uuid = str(uuid.uuid4())
+        verification_token = str(uuid.uuid4())
         return self.users.insert_one({
             '_id': user_uuid,
             'name': name,
             'email': email,
-            'password': hashed_password
+            'password': hashed_password,
+            'verification_token': verification_token,
+            'is_verified': False
         })
+
+    def verify_user(self, user_uuid: str, token: str) -> bool:
+        """Verifies a user's email address using a token."""
+        user = self.users.find_one({'_id': user_uuid})
+        if user and user.get('verification_token') == token:
+            self.users.update_one({'_id': user_uuid}, {'$set': {'is_verified': True}})
+            return True
+        return False
+
+    def find_by_verify_token(self, token: str) -> Optional[MongoDoc]:
+        """Finds a user by their email verification token."""
+        return self.users.find_one({'verification_token': token})
 
     def find_by_email(self, email) -> Optional[MongoDoc]:
         """Finds a user by their email address."""
